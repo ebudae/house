@@ -16,7 +16,7 @@
         }
       };
 
-      fetch('house.wasm').then(response =>
+      fetch('./house.wasm').then(response =>
         response.arrayBuffer()
       ).then(bytes =>
         WebAssembly.instantiate(bytes, importObject)

@@ -159,7 +159,7 @@ fn setup(
                     rotation: Quat::from_rotation_y(-PI / 2.),
                     ..default()
                 },
-                scene: asset_server.load("m.glb"),
+                scene: asset_server.load("tropical_island.glb"),
                 ..default()
             })
             .id(),
@@ -334,34 +334,37 @@ fn move_player(
 {
     let mut moved = false;
 
-    if keyboard_input.pressed(KeyCode::Up) {
-        game.player.pl.i += 0.2;
+    if keyboard_input.pressed(KeyCode::W) {
+        game.player.pl.i += 0.1;
         moved = true;
     }
-    if keyboard_input.pressed(KeyCode::Down) {
-        game.player.pl.i -= 0.2;
+    if keyboard_input.pressed(KeyCode::S) {
+        game.player.pl.i -= 0.1;
         moved = true;
     }
-    if keyboard_input.pressed(KeyCode::Right) {
-        game.player.pl.j += 0.2;
+    if keyboard_input.pressed(KeyCode::D) {
+        game.player.pl.j += 0.1;
         moved = true;
     }
-    if keyboard_input.pressed(KeyCode::Left) {
-        game.player.pl.j -= 0.2;
+    if keyboard_input.pressed(KeyCode::A) {
+        game.player.pl.j -= 0.1;
         moved = true;
     }
     if keyboard_input.pressed(KeyCode::Q) {
-        game.player.pl.k += 0.2;
+        game.player.pl.k += 0.1;
         moved = true;
     }
     if keyboard_input.pressed(KeyCode::E) {
-        game.player.pl.k -= 0.2;
+        game.player.pl.k -= 0.1;
         moved = true;
     }
-    if keyboard_input.pressed(KeyCode::Space) {
+    if keyboard_input.just_pressed(KeyCode::Space) {
         //search closest enemy, make it chil of player or undo
         if let Some( l ) = game.player.busy{
             //game.player.entity.unwrap().remove_children( l );
+            //commands.entity( game.player.busy.unwrap() ).remove_parents();
+            commands.add( RemoveParent{ child: game.player.busy.unwrap() } );
+            //game.player.busy.unwrap().remove( game.player );
             game.player.busy = None;
         }
         else{
@@ -537,8 +540,6 @@ pub struct Game {
     enemy: Enemy,
     vehicle: Vehicle,
     enemies: Vec<Enemy>,
-    score: i32,
-    camera : Option<Entity>,
     camera_y: f32,
     camera_x: f32,
     sand: Ocean,

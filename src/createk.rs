@@ -55,7 +55,7 @@ pub mod createk{
             what_to_create{ what: "enemy0".to_string(), wher: crate::Place::rand() },
             what_to_create{ what: "enemy0".to_string(), wher: crate::Place::rand() },
             what_to_create{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            what_to_create{ what: "city".to_string(), wher: crate::Place::rand() },
+            //what_to_create{ what: "city".to_string(), wher: crate::Place::rand() },
         ];
 
         for i in elems{
