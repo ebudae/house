@@ -15,17 +15,17 @@ fn main() {
         .add_startup_system(setup)
         .add_startup_system(createk::createk::createk)
         .add_startup_system(add_light)
-        .add_system(updateframe)
         .add_system(mouse_motion)
         .add_system(move_player)
         .add_system(enemiesthink)
+        .add_system(updateframe)
         .run();
 }
 
 fn add_light(
     mut commands: Commands,
     mut ambient_light: ResMut<AmbientLight>,
-    ) {
+){
     commands.spawn(PointLightBundle {
         point_light: PointLight{
                 intensity: 30000.0,
@@ -40,34 +40,14 @@ fn add_light(
 
 fn updateframe(
     mut game: ResMut<Game>,
-    time: Res<Time>,
     mut transforms: Query<&mut Transform>,
 ){
-    //game.player.pl.i = time.elapsed_seconds().sin() * 10.0 ;
     *transforms.get_mut(game.player.entity.unwrap()).unwrap() = Transform {
-        translation: Vec3::new(
-            game.player.pl.i,
-            game.player.pl.k,
-            game.player.pl.j,
-        ),
-        //rotation: Quat::from_rotation_y(time.elapsed_seconds()*0.3),
+        translation: game.player.pl.to_vec3(),
         ..default()
     };
-//    *transforms.get_mut(game.enemy.entity.unwrap()).unwrap() = Transform {
-//        translation: Vec3::new(
-//            game.enemy.pl.i,
-//            0.0,
-//            game.enemy.pl.j,
-//        ),
-//        //rotation: Quat::from_rotation_y(time.elapsed_seconds()*5.0),
-//        ..default()
-//    };
     *transforms.get_mut(game.vehicle.entity.unwrap()).unwrap() = Transform {
-        translation: Vec3::new(
-            game.vehicle.pl.i,
-            game.vehicle.pl.j,
-            game.vehicle.pl.k,
-        ),
+        translation: game.vehicle.pl.to_vec3 (),
         scale: Vec3::new( 10.0, 10.0,10.0 ),
         ..default()
     };
@@ -91,30 +71,19 @@ fn updateframe(
     }
 }
 
+const mouse_sp: f32 = 0.005;
 fn mouse_motion(
     mut motion_evr: EventReader<bevy::input::mouse::MouseMotion>,
     mut game: ResMut<Game>,
     mut query: Query<(&mut Transform, &Camera)>,
-) {
+){
     for ev in motion_evr.iter() {
-        //println!("Mouse moved: X: {} px, Y: {} px", ev.delta.x, ev.delta.y);
-        game.camera_x -= ev.delta.y * 0.005;
-        game.camera_y += ev.delta.x * 0.005;
-        //game.camera.looking_at( Vec3::new(game.camera_y.cos(), game.camera_x.sin(),game.camera_y.sin()), Vec3::Y);
+        game.player.camera_x -= ev.delta.y * mouse_sp;
+        game.player.camera_y += ev.delta.x * mouse_sp;
         for (mut transform, _) in query.iter_mut() {
-        // Set the camera's position
-        //transform.translation = camera_pos;
-
-        // Calculate the direction vector to the target position
-        //let direction = target_pos - camera_pos;
-        //let distance = direction.length();
-
-        // Calculate the rotation of the camera
-        transform.look_at(Vec3::new(game.camera_y.cos(), game.camera_x.sin(),game.camera_y.sin()), Vec3::Y);
-
-        // Set the camera's scale
-        //transform.scale = Vec3::new(1.0, 1.0, 1.0);
-    }
+            transform.look_at( game.player.forward(), Vec3::Y)
+            //transform.scale = Vec3::new(1.0, 1.0, 1.0);
+        }
     }
 }
 
@@ -124,15 +93,12 @@ fn setup(
     mut game: ResMut<Game>,
 ) {
     let k = commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(
-            0.0,
-            0.0,
-            0.0,
-        )
-        .looking_at( Vec3::new(game.camera_y.cos()*game.camera_x.cos(), game.camera_x,game.camera_y.sin()*game.camera_x.cos()), Vec3::Y),
+        transform: Transform::from_xyz( 0.0, 0.0, 0.0 )
+        .looking_at( game.player.forward(), Vec3::Y),
         ..default()
-    }).id();
-    //game.camera = k.clone();
+    })
+    .id();
+
     commands.insert_resource(GoalsReached { 
         main_goal0: false,
         main_goal1: false,
@@ -148,254 +114,125 @@ fn setup(
         bonus5: false,
     });
     game.sand.entity = Some(
-        commands
-            .spawn(SceneBundle {
-                transform: Transform {
-                    translation: Vec3::new(
-                        0.0 as f32,
-                        -10.0 as f32,
-                        0.0 as f32,
-                    ),
-                    rotation: Quat::from_rotation_y(-PI / 2.),
-                    ..default()
-                },
-                scene: asset_server.load("tropical_island.glb"),
+        commands.spawn(SceneBundle {
+            transform: Transform {
+                translation: Vec3::new( 0.0 as f32, -10.0 as f32, 0.0 as f32 ),
+                rotation: Quat::from_rotation_y(-PI / 2.),
                 ..default()
-            })
-            .id(),
+            },
+            scene: asset_server.load("tropical_island.glb"),
+            ..default()
+        })
+        .id(),
     );
     game.player.entity = Some(
-        commands
-            .spawn(SceneBundle {
-                transform: Transform {
-                    translation: Vec3::new(
-                        game.player.pl.i as f32,
-                        game.player.pl.k,
-                        game.player.pl.j as f32,
-                    ),
-                    rotation: Quat::from_rotation_y(-PI / 2.),
-                    ..default()
-                },
-                //scene: asset_server.load("coconut_palm.glb#Scene0"),
-                //scene: asset_server.load("viking_boat.glb#Scene0"),
+        commands.spawn(SceneBundle {
+            transform: Transform {
+                translation: Vec3::new( game.player.pl.i, game.player.pl.j, game.player.pl.k ),
+                rotation: Quat::from_rotation_y(-PI / 2.),
                 ..default()
-            })
-            .id(),
+            },
+            //scene: asset_server.load("coconut_palm.glb#Scene0"),
+            //scene: asset_server.load("viking_boat.glb#Scene0"),
+            ..default()
+        })
+        .id(),
     );
-    if let Some( l ) = game.player.entity{
-        //commands.entity(k).insert_children( 1,&[l] );
-        commands.entity( l ) .insert_children( 1, &[k] );
-    }
-//    let enemy3d = asset_server.load("low-poly_fruit_box_assets.glb#Scene0");
-//    game.enemy.entity = Some(
-//        commands
-//            .spawn(SceneBundle {
-//                transform: Transform {
-//                    translation: Vec3::new(
-//                        game.enemy.pl.i as f32,
-//                        0.0 as f32,
-//                        game.enemy.pl.j as f32,
-//                    ),
-//                    rotation: Quat::from_rotation_y(-PI / 2.),
-//                    ..default()
-//                },
-//                scene: enemy3d.clone(),
-//                ..default()
-//            })
-//            .id(),
-//    );
+    
+    commands.entity( game.player.entity.unwrap() ) .insert_children( 1, &[k] );
+    
     game.vehicle.entity = Some(
-        commands
-            .spawn(SceneBundle {
-                transform: Transform {
-                    translation: Vec3::new(
-                        game.vehicle.pl.i as f32,
-                        0.0 as f32,
-                        game.vehicle.pl.j as f32,
-                    ),
-                    rotation: Quat::from_rotation_y(-PI / 2.),
-                    scale: Vec3::new( 10.0, 10.0,10.0 ),
-                },
-                scene: asset_server.load("small_wooden_boat.glb#Scene0"),
-                ..default()
-            })
-            .id(),
+        commands.spawn(SceneBundle {
+            transform: Transform {
+                translation: Vec3::new( game.vehicle.pl.i, game.vehicle.pl.j, game.vehicle.pl.k ),
+                rotation: Quat::from_rotation_y(-PI / 2.),
+                scale: Vec3::new( 10.0, 10.0,10.0 ),
+            },
+            scene: asset_server.load("small_wooden_boat.glb#Scene0"),
+            ..default()
+        })
+        .id(),
     );
 }
 
-//fn createk(
-//    mut commands: Commands,
-//    asset_server: Res<AssetServer>,
-//    mut game: ResMut<Game>,
-//){
-//    let enemy3d = asset_server.load("grand_piano_and_stool.glb#Scene0");
-//    let enemy3d0 = asset_server.load("low-poly_fruit_box_assets.glb#Scene0");
-//
-//    struct what_to_create{
-//        what: String,
-//        wher: Place,
-//    }
-//
-//    let elems: Vec<what_to_create> = vec![
-//        what_to_create{ what: "enemy".to_string(), wher: Place{ i:3.0, j:0.0, k:2.0 } },
-//        what_to_create{ what: "enemy".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//        what_to_create{ what: "enemy0".to_string(), wher: Place::rand() },
-//    ];
-//
-//    for i in elems{
-//        match i.what.as_str(){
-//            "enemy" => { game.enemies.push( 
-//                                        Enemy{ 
-//                                            entity: Some(
-//                                                commands.spawn(
-//                                                    SceneBundle {
-//                                                        transform: Transform {
-//                                                            translation: Vec3::new(
-//                                                                i.wher.i,
-//                                                                i.wher.j,
-//                                                                i.wher.k,
-//                                                            ),
-//                                                            ..default()
-//                                                        },
-//                                                        scene: enemy3d.clone(),
-//                                                        ..default()
-//                                                    }
-//                                                ).id(),
-//                                            ), 
-//                                            pl: Place{
-//                                                i: i.wher.i,
-//                                                j: i.wher.j,
-//                                                k: i.wher.k,
-//                                            }
-//                                        } 
-//                                    );}
-//            "enemy0" => { game.enemies.push( 
-//                                        Enemy{ 
-//                                            entity: Some(
-//                                                commands.spawn(
-//                                                    SceneBundle {
-//                                                        transform: Transform {
-//                                                            translation: Vec3::new(
-//                                                                i.wher.i,
-//                                                                i.wher.j,
-//                                                                i.wher.k,
-//                                                            ),
-//                                                            ..default()
-//                                                        },
-//                                                        scene: enemy3d0.clone(),
-//                                                        ..default()
-//                                                    }
-//                                                ).id(),
-//                                            ), 
-//                                            pl: Place{
-//                                                i: i.wher.i,
-//                                                j: i.wher.j,
-//                                                k: i.wher.k,
-//                                            }
-//                                        } 
-//                                    );}
-//            _ => {}
-//        }
-//    }
-//}
 fn move_player(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
     mut game: ResMut<Game>,
     mut transforms: Query<&mut Transform>,
-) 
-{
+){
     let mut moved = false;
 
     if keyboard_input.pressed(KeyCode::W) {
-        game.player.pl.i += 0.1;
+        let k = game.player.forward();
+        game.player.pl.i += 0.1 * k.x;
+        game.player.pl.j += 0.1 * k.y;
+        game.player.pl.k += 0.1 * k.z;
         moved = true;
     }
     if keyboard_input.pressed(KeyCode::S) {
-        game.player.pl.i -= 0.1;
-        moved = true;
-    }
-    if keyboard_input.pressed(KeyCode::D) {
-        game.player.pl.j += 0.1;
-        moved = true;
-    }
-    if keyboard_input.pressed(KeyCode::A) {
-        game.player.pl.j -= 0.1;
+        let k = game.player.forward();
+        game.player.pl.i -= 0.1 * k.x;
+        game.player.pl.j -= 0.1 * k.y;
+        game.player.pl.k -= 0.1 * k.z;
         moved = true;
     }
     if keyboard_input.pressed(KeyCode::Q) {
-        game.player.pl.k += 0.1;
+        game.player.pl.j += 0.1;
         moved = true;
     }
     if keyboard_input.pressed(KeyCode::E) {
-        game.player.pl.k -= 0.1;
+        game.player.pl.j -= 0.1;
+        moved = true;
+    }
+    if keyboard_input.pressed(KeyCode::D) {
+        let k = game.player.right();
+        game.player.pl.i += 0.1 * k.x;
+        game.player.pl.j += 0.1 * k.y;
+        game.player.pl.k += 0.1 * k.z;
+        moved = true;
+    }
+    if keyboard_input.pressed(KeyCode::A) {
+        let k = game.player.right();
+        game.player.pl.i -= 0.1 * k.x;
+        game.player.pl.j -= 0.1 * k.y;
+        game.player.pl.k -= 0.1 * k.z;
         moved = true;
     }
     if keyboard_input.just_pressed(KeyCode::Space) {
         //search closest enemy, make it chil of player or undo
         if let Some( l ) = game.player.busy{
-            //game.player.entity.unwrap().remove_children( l );
-            //commands.entity( game.player.busy.unwrap() ).remove_parents();
+            *transforms.get_mut(game.player.busy.unwrap()).unwrap() = Transform::from_translation( game.player.accum_forward()) ;
+            //game.player.busy.unwrap().pl.from_vec3( game.player.forward() );
+            let k = game.player.accum_forward();
+            game.enemies[0].pl.from_vec3( k );
             commands.add( RemoveParent{ child: game.player.busy.unwrap() } );
-            //game.player.busy.unwrap().remove( game.player );
             game.player.busy = None;
         }
         else{
-            if let Some( l ) = game.player.entity{
-                commands.entity( l ) .insert_children( 1, &[game.enemies[0].entity.unwrap()] );
-            }
-            game.player.busy =game.enemies[0].entity;
+            //if let Some( l ) = game.player.entity{
+            let k = game.player.accum_forward();
+            game.enemies[0].pl.from_vec3( k);
+            commands.entity( game.player.entity.unwrap() ) .insert_children( 1, &[game.enemies[0].entity.unwrap()] );
+            //}
+            game.player.busy = game.enemies[0].entity;
         }
     }
 
     if moved {
         *transforms.get_mut(game.player.entity.unwrap()).unwrap() = Transform {
-            translation: Vec3::new(
-                game.player.pl.i,
-                game.player.pl.k,
-                game.player.pl.j,
-            ),
+            translation: Vec3::new( game.player.pl.i, game.player.pl.j, game.player.pl.k ),
             ..default()
         };   
-
     }
 }
 
 fn enemiesthink(
     mut game: ResMut<Game>,
 ){
-    game.enemy.pl.i += rand::thread_rng().gen_range(-0.1..0.1) *0.0;
-}
-
-fn queryplayer(mut q: Query<&K>) {
-    let k = q.single_mut();
+    for enemy in &mut game.enemies{
+        enemy.pl.i += rand::thread_rng().gen_range(-0.1..0.1) *0.005 ;
+    }
 }
 
 #[derive(Component)]
@@ -409,7 +246,7 @@ struct Place{
 }
 impl Place{
     fn new()
-    -> Place{
+    -> Self{
         Place{
             i: 0.0,
             j: 0.0,
@@ -424,13 +261,19 @@ impl Place{
             k: rand::thread_rng().gen_range(-40.0..40.0),
         } 
     }
+    fn from_vec3( &mut self, k:Vec3 ){
+        self.i = k.x;
+        self.j = k.y;
+        self.k = k.z;
+    }
+    fn to_vec3( &self )
+    -> Vec3{
+        Vec3::new( self.i, self.j, self.k )
+    }
 }
 
 #[derive(Component, Default)]
 struct Price (f32);
-
-#[derive(Component)]
-struct Nme (String);
 
 #[derive(Component, Default, Clone)]
 struct Enemy{
@@ -452,15 +295,31 @@ struct K{
     pl:     Place,
     entity: Option<Entity>,
     busy:   Option<Entity>,
+    camera_y: f32,
+    camera_x: f32,
 }
 impl K{
     fn new()
-    -> K{
+    -> Self{
         K{
             pl: Place::new(),
             entity: None,
             busy : None,
+            camera_y: 0.0,
+            camera_x: 0.0,
         }
+    }
+    fn forward( &self )
+    -> Vec3{
+        Vec3::new( self.camera_y.cos() * self.camera_x.cos(), self.camera_x.sin(), self.camera_y.sin() * self.camera_x.cos())
+    }
+    fn accum_forward( &self )
+    -> Vec3{
+        Vec3::new( self.pl.i + self.camera_y.cos() * self.camera_x.cos(), self.pl.j + self.camera_x.sin(),self.pl. k + self.camera_y.sin() * self.camera_x.cos())
+    }
+    fn right( &self )
+    -> Vec3{
+        Vec3::new( self.camera_y.sin()* - self.camera_x.cos() , 0.0, self.camera_y.cos() * self.camera_x.cos())
     }
 }
 
@@ -474,7 +333,7 @@ struct Vehicle{
 }
 impl Vehicle{
     fn new()
-    -> Vehicle{
+    -> Self{
         Vehicle{
             pl: Place::new(),
             entity: None,
@@ -489,7 +348,7 @@ struct Nmo{
 }
 impl Nmo{
     fn new()
-    -> Nmo{
+    -> Self{
         Nmo{
             pl: Place::new(),
             entity: None,
@@ -520,7 +379,6 @@ struct Ocean{
 
 #[derive(Bundle)]
 struct PlayerBundle {
-    name: Nme,
     pl: Place,
     health: Health,
     price: Price,
@@ -537,10 +395,7 @@ enum GameState {
 #[derive(Resource, Default)]
 pub struct Game {
     player: K,
-    enemy: Enemy,
     vehicle: Vehicle,
     enemies: Vec<Enemy>,
-    camera_y: f32,
-    camera_x: f32,
     sand: Ocean,
 }
