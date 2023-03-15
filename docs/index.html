@@ -1,30 +1,14 @@
-<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <title>q</title>
-    <script>
-      // Define the canvas element
-      const canvas = document.createElement('canvas');
-      canvas.id = 'bevy-canvas';
-      document.body.appendChild(canvas);
-
-      // Load the WebAssembly binary
-      const importObject = {
-        env: {
-          log: (msgPtr) => console.log(UTF8ToString(msgPtr))
-        }
-      };
-
-      fetch('./house.wasm').then(response =>
-        response.arrayBuffer()
-      ).then(bytes =>
-        WebAssembly.instantiate(bytes, importObject)
-      ).then(result =>
-        result.instance.exports.start()
-      );
-    </script>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
   </head>
   <body>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <script src="./house.js"></script>
+    <script>
+      window.addEventListener("load", async () => {
+        await wasm_bindgen("./house_bg.wasm");
+      });
+    </script>
   </body>
 </html>
