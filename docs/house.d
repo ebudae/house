@@ -1,0 +1,1 @@
+C:\Users\alas\Desktop\Nueva\ carpeta\house\target\wasm32-unknown-unknown\release\house.wasm: C:\Users\alas\Desktop\Nueva\ carpeta\house\src\createk.rs C:\Users\alas\Desktop\Nueva\ carpeta\house\src\main.rs
