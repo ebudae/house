@@ -12,13 +12,13 @@ pub mod createk{
         let enemy3d0 = asset_server.load("low-poly_fruit_box_assets.glb#Scene0");
         let la_night_city = asset_server.load("la_night_city.glb#Scene0");
         let tropical_island = asset_server.load("tropical_island.glb#Scene0");
-        let question_mark = asset_server.load("question_mark.glb#Scene0");
+        let question_mark = asset_server.load("question_mark .glb#Scene0");
         //let mossy_rusty_sheet = asset_server.load("mossy_rusty_sheet.glb#Scene0");
         let concrete_barrier = asset_server.load("concrete_barrier.glb#Scene0");
         //let fantasy_town = asset_server.load("fantasy_town.glb#Scene0");
         //let simple_wood_planks_debris_pack = asset_server.load("simple_wood_planks_debris_pack.glb#Scene0");
         //let q63dae3c872f63b7131e032b6 = asset_server.load(r"girl-woman-glb-animated\source\63dae3c872f63b7131e032b6.glb#Scene0");
-
+        let nokia = asset_server.load("nokia.glb#Scene0");
         struct WhatToCreate{
             what: String,
             wher: crate::Place,
@@ -53,7 +53,7 @@ pub mod createk{
             WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
             WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
             WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "tropical_island".to_string(), wher: crate::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
             WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
             WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
             WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
@@ -65,7 +65,7 @@ pub mod createk{
             WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
             WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
             WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            //what_to_create{ what: "city".to_string(), wher: crate::Place::rand() },
+            WhatToCreate{ what: "nokia".to_string(), wher: crate::Place{ i:3.0, j:0.0, k:2.0 } },
         ];
 
         for i in elems{
@@ -190,6 +190,27 @@ pub mod createk{
                                                                 ..default()
                                                             },
                                                             scene: concrete_barrier.clone(),
+                                                            ..default()
+                                                        }
+                                                    ).id(),
+                                                ), 
+                                                pl: crate::Place{
+                                                    i: i.wher.i,
+                                                    j: i.wher.j,
+                                                    k: i.wher.k,
+                                                }
+                                            } 
+                                        );}
+                "nokia" => { game.enemies.push( 
+                                            crate::Enemy{ 
+                                                entity: Some(
+                                                    commands.spawn(
+                                                        SceneBundle {
+                                                            transform: Transform {
+                                                                translation: Vec3::new(i.wher.i,i.wher.j,i.wher.k),
+                                                                ..default()
+                                                            },
+                                                            scene: nokia.clone(),
                                                             ..default()
                                                         }
                                                     ).id(),

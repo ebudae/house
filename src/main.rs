@@ -1,22 +1,25 @@
-use bevy::app::App;
-use bevy::core_pipeline::clear_color::ClearColor;
-use bevy::render::color::Color;
-use bevy::ecs::system::Commands;
-use bevy::core_pipeline::core_3d::Camera3dBundle;
-use bevy::{*,prelude::*};
+use bevy::{ app::App,
+            core_pipeline::{core_3d::Camera3dBundle,
+                            clear_color::ClearColor},
+            render::color::Color,
+            ecs::system::Commands,
+            {*,prelude::*,window::CursorGrabMode}};
 use {std::f32::consts::PI, rand::Rng};
 mod createk;
 
 fn main() {
     App::new()
         .init_resource::<Game>()
+        .add_state::<TravelMode>()
         .insert_resource(ClearColor(Color::rgb(0.99, 0.99, 0.9)))
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_startup_system(createk::createk::createk)
         .add_startup_system(add_light)
         .add_system(mouse_motion)
-        .add_system(move_player)
+        .add_system(nomau5)
+        .add_system(move_player.in_set( OnUpdate(TravelMode::Walk) ))
+        .add_system(move_vhc.in_set( OnUpdate(TravelMode::Vehicle) ))
         .add_system(enemiesthink)
         .add_system(updateframe)
         .run();
@@ -41,15 +44,18 @@ fn add_light(
 fn updateframe(
     mut game: ResMut<Game>,
     mut transforms: Query<&mut Transform>,
+    mut time: Res<Time>,
 ){
     *transforms.get_mut(game.player.entity.unwrap()).unwrap() = Transform {
         translation: game.player.pl.to_vec3(),
         ..default()
     };
+    transforms.get_mut(game.eye.unwrap()).unwrap() .look_at( game.player.forward(), Vec3::Y);
+    
     *transforms.get_mut(game.vehicle.entity.unwrap()).unwrap() = Transform {
         translation: game.vehicle.pl.to_vec3 (),
+        rotation: math::f32::Quat::from_rotation_y( game.vehicle.camera_y ),
         scale: Vec3::new( 10.0, 10.0,10.0 ),
-        ..default()
     };
     *transforms.get_mut(game.sand.entity.unwrap()).unwrap() = Transform {
         translation: Vec3::new(
@@ -57,6 +63,7 @@ fn updateframe(
             -10.0,
             0.0,
         ),
+        scale: Vec3::new( time.elapsed_seconds().sin(),time.elapsed_seconds().sin(), time.elapsed_seconds().sin() ),
         ..default()
     };
     for i in &game.enemies{
@@ -71,6 +78,24 @@ fn updateframe(
     }
 }
 
+fn nomau5(
+    mut windows: Query<&mut Window>,
+    mouse: Res<Input<MouseButton>>,
+    key: Res<Input<KeyCode>>,
+) {
+    let mut window = windows.single_mut();
+
+    if mouse.just_pressed(MouseButton::Left) {
+        window.cursor.visible = false;
+        window.cursor.grab_mode = CursorGrabMode::Locked;
+    }
+
+    if key.just_pressed(KeyCode::Escape) {
+        window.cursor.visible = true;
+        window.cursor.grab_mode = CursorGrabMode::None;
+    }
+}
+
 const mouse_sp: f32 = 0.005;
 fn mouse_motion(
     mut motion_evr: EventReader<bevy::input::mouse::MouseMotion>,
@@ -79,10 +104,14 @@ fn mouse_motion(
 ){
     for ev in motion_evr.iter() {
         game.player.camera_x -= ev.delta.y * mouse_sp;
-        game.player.camera_y += ev.delta.x * mouse_sp;
+        game.player.camera_y -= ev.delta.x * mouse_sp;
         for (mut transform, _) in query.iter_mut() {
             transform.look_at( game.player.forward(), Vec3::Y)
             //transform.scale = Vec3::new(1.0, 1.0, 1.0);
+        }
+        if let Some( l ) = game.player.busy{
+            let m = game.player.accum_forward();
+            game.enemies[0].pl.from_vec3( m);
         }
     }
 }
@@ -91,13 +120,15 @@ fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut game: ResMut<Game>,
-) {
-    let k = commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz( 0.0, 0.0, 0.0 )
-        .looking_at( game.player.forward(), Vec3::Y),
-        ..default()
-    })
-    .id();
+){
+    game.eye = Some(
+        commands.spawn(Camera3dBundle {
+            transform: Transform::from_xyz( 0.0, 0.0, 0.0 )
+            .looking_at( game.player.forward(), Vec3::Y),
+            ..default()
+        })
+        .id()
+    );
 
     commands.insert_resource(GoalsReached { 
         main_goal0: false,
@@ -120,7 +151,19 @@ fn setup(
                 rotation: Quat::from_rotation_y(-PI / 2.),
                 ..default()
             },
-            scene: asset_server.load("tropical_island.glb"),
+            scene: asset_server.load("mesh0 .glb"),
+            ..default()
+        })
+        .id(),
+    );
+    game.ocean.entity = Some(
+        commands.spawn(SceneBundle {
+            transform: Transform {
+                translation: Vec3::new( 0.0 as f32, -10.0 as f32, 0.0 as f32 ),
+                rotation: Quat::from_rotation_y(-PI / 2.),
+                ..default()
+            },
+            scene: asset_server.load("mossy_rusty_sheet.glb"),
             ..default()
         })
         .id(),
@@ -139,13 +182,28 @@ fn setup(
         .id(),
     );
     
-    commands.entity( game.player.entity.unwrap() ) .insert_children( 1, &[k] );
+    commands.entity( game.player.entity.unwrap() ) .insert_children( 1, &[game.eye.unwrap()] );
     
+    let k = commands.spawn(DirectionalLightBundle {
+        directional_light: DirectionalLight{
+                color: render::color::Color::BLUE,
+                illuminance: 30000.0,
+                //shadows_enabled: true,
+                ..Default::default()
+            },
+        transform: Transform{ 
+            translation: Vec3::new(0.0, 0.0, 0.0),
+            rotation: math::f32::Quat::from_rotation_y( 1.5 * PI ),
+            scale: Vec3::new(1.0, 1.0, 1.0),
+            },
+        ..Default::default()
+    }).id();
+
     game.vehicle.entity = Some(
         commands.spawn(SceneBundle {
             transform: Transform {
                 translation: Vec3::new( game.vehicle.pl.i, game.vehicle.pl.j, game.vehicle.pl.k ),
-                rotation: Quat::from_rotation_y(-PI / 2.),
+                rotation: math::f32::Quat::from_rotation_y( game.vehicle.camera_y ),
                 scale: Vec3::new( 10.0, 10.0,10.0 ),
             },
             scene: asset_server.load("small_wooden_boat.glb#Scene0"),
@@ -153,13 +211,16 @@ fn setup(
         })
         .id(),
     );
+    commands.entity( game.vehicle.entity.unwrap() ) .insert_children( 1, &[k] );
 }
 
 fn move_player(
     keyboard_input: Res<Input<KeyCode>>,
-    mut commands: Commands,
+    //mut commands: Commands,
     mut game: ResMut<Game>,
     mut transforms: Query<&mut Transform>,
+    mut next_state: ResMut<NextState<TravelMode>>,
+    //mut walkingmode: ResMut<TravelMode>,
 ){
     let mut moved = false;
 
@@ -199,31 +260,93 @@ fn move_player(
         game.player.pl.k -= 0.1 * k.z;
         moved = true;
     }
+    
+    if keyboard_input.just_pressed(KeyCode::Z) {
+        let k = game.vehicle.passenger();
+        game.player.pl.from_vec3( k );
+        next_state.set(TravelMode::Vehicle);
+    }
+    //game.player.pl.j = 0.0;
+
     if keyboard_input.just_pressed(KeyCode::Space) {
         //search closest enemy, make it chil of player or undo
+        let k = game.player.accum_forward();
+        game.enemies[0].pl.from_vec3( k );
         if let Some( l ) = game.player.busy{
-            *transforms.get_mut(game.player.busy.unwrap()).unwrap() = Transform::from_translation( game.player.accum_forward()) ;
+            //*transforms.get_mut(game.player.busy.unwrap()).unwrap() = Transform::from_translation( game.player.accum_forward()) ;
             //game.player.busy.unwrap().pl.from_vec3( game.player.forward() );
-            let k = game.player.accum_forward();
-            game.enemies[0].pl.from_vec3( k );
-            commands.add( RemoveParent{ child: game.player.busy.unwrap() } );
-            game.player.busy = None;
+            //commands.add( RemoveParent{ child: game.player.busy.unwrap() } );
+            game.player.unbusy();
         }
         else{
             //if let Some( l ) = game.player.entity{
-            let k = game.player.accum_forward();
-            game.enemies[0].pl.from_vec3( k);
-            commands.entity( game.player.entity.unwrap() ) .insert_children( 1, &[game.enemies[0].entity.unwrap()] );
+            //let k = game.player.accum_forward();
+            //game.enemies[0].pl.from_vec3( k);
+            //commands.entity( game.player.entity.unwrap() ) .insert_children( 1, &[game.enemies[0].entity.unwrap()] );
             //}
             game.player.busy = game.enemies[0].entity;
         }
     }
 
     if moved {
+        if let Some( l ) = game.player.busy{
+            let k = game.player.accum_forward();
+            game.enemies[0].pl.from_vec3( k );
+            }
         *transforms.get_mut(game.player.entity.unwrap()).unwrap() = Transform {
             translation: Vec3::new( game.player.pl.i, game.player.pl.j, game.player.pl.k ),
             ..default()
         };   
+    }
+}
+fn move_vhc(
+    keyboard_input: Res<Input<KeyCode>>,
+    //mut commands: Commands,
+    mut game: ResMut<Game>,
+    mut transforms: Query<&mut Transform>,
+    mut next_state: ResMut<NextState<TravelMode>>,
+    //mut walkingmode: ResMut<TravelMode>,
+){
+    let mut moved = false;
+
+    if keyboard_input.pressed(KeyCode::W) {
+        let k = game.vehicle.forward();
+        game.vehicle.pl.i += 0.4 * k.x;
+        game.vehicle.pl.j += 0.4 * k.y;
+        game.vehicle.pl.k += 0.4 * k.z;
+        moved = true;
+    }
+    if keyboard_input.pressed(KeyCode::S) {
+        let k = game.vehicle.forward();
+        game.vehicle.pl.i -= 0.4 * k.x;
+        game.vehicle.pl.j -= 0.4 * k.y;
+        game.vehicle.pl.k -= 0.4 * k.z;
+        moved = true;
+    }
+    if keyboard_input.pressed(KeyCode::A) {
+        game.player.camera_y += 0.02;
+        game.vehicle.camera_y += 0.02;
+        moved = true;
+    }
+    if keyboard_input.pressed(KeyCode::D) {
+        game.player.camera_y -= 0.02;
+        game.vehicle.camera_y -= 0.02;
+        moved = true;
+    }
+    
+    if keyboard_input.just_pressed(KeyCode::Z) {
+        next_state.set(TravelMode::Walk);
+    }
+    //game.player.pl.j = 0.0;
+
+    if moved {
+        *transforms.get_mut(game.vehicle.entity.unwrap()).unwrap() = Transform {
+            translation: Vec3::new( game.vehicle.pl.i, game.vehicle.pl.j, game.vehicle.pl.k ),
+            rotation: math::f32::Quat::from_rotation_y( game.vehicle.camera_y ),
+            ..default()
+        };
+        let k = game.vehicle.passenger();
+        game.player.pl.from_vec3( k );
     }
 }
 
@@ -231,10 +354,17 @@ fn enemiesthink(
     mut game: ResMut<Game>,
 ){
     for enemy in &mut game.enemies{
-        enemy.pl.i += rand::thread_rng().gen_range(-0.1..0.1) *0.005 ;
+    //    enemy.pl.i += rand::thread_rng().gen_range(-0.1..0.1) *0.005 ;
     }
 }
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
+//#[derive(Resource, Default)]
+enum TravelMode{
+    #[default]
+    Walk,
+    Vehicle,
+}
 
 #[derive(Component)]
 struct Health (f32);
@@ -312,15 +442,18 @@ impl K{
     }
     fn forward( &self )
     -> Vec3{
-        Vec3::new( self.camera_y.cos() * self.camera_x.cos(), self.camera_x.sin(), self.camera_y.sin() * self.camera_x.cos())
+        Vec3::new( - self.camera_y.cos() * self.camera_x.cos(), self.camera_x.sin(), self.camera_y.sin() * self.camera_x.cos())
     }
     fn accum_forward( &self )
     -> Vec3{
-        Vec3::new( self.pl.i + self.camera_y.cos() * self.camera_x.cos(), self.pl.j + self.camera_x.sin(),self.pl. k + self.camera_y.sin() * self.camera_x.cos())
+        Vec3::new( self.pl.i - self.camera_y.cos() * self.camera_x.cos(), self.pl.j + self.camera_x.sin(),self.pl. k + self.camera_y.sin() * self.camera_x.cos())
     }
     fn right( &self )
     -> Vec3{
-        Vec3::new( self.camera_y.sin()* - self.camera_x.cos() , 0.0, self.camera_y.cos() * self.camera_x.cos())
+        Vec3::new( self.camera_y.sin()* - self.camera_x.cos() , 0.0, - self.camera_y.cos() * self.camera_x.cos())
+    }
+    fn unbusy( &mut self ){
+        self.busy = None;
     }
 }
 
@@ -331,6 +464,8 @@ struct Friendly;
 struct Vehicle{
     pl:     Place,
     entity: Option<Entity>,
+    camera_y: f32,
+    camera_x: f32,
 }
 impl Vehicle{
     fn new()
@@ -338,7 +473,17 @@ impl Vehicle{
         Vehicle{
             pl: Place::new(),
             entity: None,
+            camera_y: 0.0,
+            camera_x: 0.0,
         }
+    }
+    fn forward( &self )
+    -> Vec3{
+        Vec3::new( self.camera_y.cos() * self.camera_x.cos(), self.camera_x.sin(), - self.camera_y.sin() * self.camera_x.cos())
+    }
+    fn passenger( &self )
+    -> Vec3{
+        Vec3{ x: self.pl.i, y: self.pl.j, z: self.pl.k }
     }
 }
 
@@ -374,8 +519,26 @@ struct GoalsReached {
 }
 
 #[derive(Component, Default)]
+struct Island{
+    entity: Option<Entity>,
+    //waves: Vec<Wave>,
+}
+impl Island{
+    fn get_level( x:f32, y:f32 )
+    -> f32{
+        ( x*x+y*y ).sqrt().sin() / ( x*x+y*y ).sqrt()
+    }
+}
+
+#[derive(Component, Default)]
 struct Ocean{
     entity: Option<Entity>,
+}
+impl Ocean{
+    fn get_level()
+    -> f32{
+        0.0
+    }
 }
 
 #[derive(Bundle)]
@@ -395,8 +558,10 @@ enum GameState {
 
 #[derive(Resource, Default)]
 pub struct Game {
+    eye: Option<Entity>,
     player: K,
     vehicle: Vehicle,
     enemies: Vec<Enemy>,
-    sand: Ocean,
+    sand: Island,
+    ocean: Ocean,
 }
