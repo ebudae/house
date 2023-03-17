@@ -3,7 +3,9 @@ use bevy::{ app::App,
                             clear_color::ClearColor},
             render::color::Color,
             ecs::system::Commands,
-            {*,prelude::*,window::CursorGrabMode}};
+            {*,prelude::*,window::CursorGrabMode},
+            render::mesh,
+            render::mesh::*};
 use {std::f32::consts::PI, rand::Rng};
 mod createk;
 
@@ -16,6 +18,7 @@ fn main() {
         .add_startup_system(setup)
         .add_startup_system(createk::createk::createk)
         .add_startup_system(add_light)
+        .add_startup_system(Ocean::create)
         .add_system(mouse_motion)
         .add_system(nomau5)
         .add_system(move_player.in_set( OnUpdate(TravelMode::Walk) ))
@@ -119,6 +122,8 @@ fn mouse_motion(
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     mut game: ResMut<Game>,
 ){
     game.eye = Some(
@@ -206,12 +211,30 @@ fn setup(
                 rotation: math::f32::Quat::from_rotation_y( game.vehicle.camera_y ),
                 scale: Vec3::new( 10.0, 10.0,10.0 ),
             },
-            scene: asset_server.load("small_wooden_boat.glb#Scene0"),
+            scene: asset_server.load("small_wooden_boat_new.glb#Scene0"),
             ..default()
         })
         .id(),
     );
     commands.entity( game.vehicle.entity.unwrap() ) .insert_children( 1, &[k] );
+
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        vec![[0., 0., 0.], [10., 0., 10.], [10., 0., 0.], [0.0, 0.0, 10.0]]
+    );
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0., 1., 0.]; 4]);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]; 4]);
+
+    mesh.set_indices(Some(mesh::Indices::U32(vec![0, 1, 2, 1, 0, 3])));
+
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(mesh),
+        material: materials.add(Color::rgb(0.2, 0.5, 0.3).into()),
+        ..default()
+    });
+
 }
 
 fn move_player(
@@ -483,7 +506,7 @@ impl Vehicle{
     }
     fn passenger( &self )
     -> Vec3{
-        Vec3{ x: self.pl.i, y: self.pl.j, z: self.pl.k }
+        Vec3{ x: self.pl.i, y: self.pl.j+1.0, z: self.pl.k }
     }
 }
 
@@ -535,7 +558,54 @@ struct Ocean{
     entity: Option<Entity>,
 }
 impl Ocean{
-    fn get_level()
+    fn create(
+        mut commands: Commands,
+        mut meshes: ResMut<Assets<Mesh>>,
+        mut materials: ResMut<Assets<StandardMaterial>>,
+    ){
+        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+        let mut vert = vec![];
+        let mut indices = Vec::new();
+        struct Vertex {
+            x: f32,
+            y: f32,
+            z: f32,
+        }
+        for i in 0..=20 {
+            for j in 0..=20 {
+                let x = (i as f32 - 10.0) * 1.0;
+                let z = (j as f32 - 10.0) * 1.0;
+                vert.push([x,0.2*((x+z)*0.2).sin(),z]);
+            }
+        }
+        for i in 0..=19 {
+            for j in 0..=19 {
+                let v0 = i * 21 + j;
+                let v1 = i * 21 + j + 1;
+                let v2 = (i + 1) * 21 + j;
+                let v3 = (i + 1) * 21 + j + 1;
+                indices.push(v0);
+                indices.push(v1);
+                indices.push(v2);
+                indices.push(v2);
+                indices.push(v1);
+                indices.push(v3);
+            }
+        }
+        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION,vert);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0., 1., 0.]; 21*21]);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]; 21*21]);
+        mesh.set_indices(Some(mesh::Indices::U32(indices)));
+
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(mesh),
+            material: materials.add(Color::rgb(0.0, 0.1, 0.3).into()),
+            ..default()
+        });
+    }
+    fn get_level(
+        time: Res<Time>
+    )
     -> f32{
         0.0
     }

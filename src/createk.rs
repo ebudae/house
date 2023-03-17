@@ -17,7 +17,7 @@ pub mod createk{
         let concrete_barrier = asset_server.load("concrete_barrier.glb#Scene0");
         //let fantasy_town = asset_server.load("fantasy_town.glb#Scene0");
         //let simple_wood_planks_debris_pack = asset_server.load("simple_wood_planks_debris_pack.glb#Scene0");
-        //let q63dae3c872f63b7131e032b6 = asset_server.load(r"girl-woman-glb-animated\source\63dae3c872f63b7131e032b6.glb#Scene0");
+        let q63dae3c872f63b7131e032b6 = asset_server.load(r"girl-woman-glb-animated\source\63dae3c872f63b7131e032b6.glb#Scene0");
         let nokia = asset_server.load("nokia.glb#Scene0");
         struct WhatToCreate{
             what: String,
@@ -25,7 +25,7 @@ pub mod createk{
         }
 
         let elems: Vec<WhatToCreate> = vec![
-            WhatToCreate{ what:  "concrete_barrier".to_string(), wher: crate::Place{ i:3.0, j:0.0, k:2.0 } },
+            WhatToCreate{ what:  "q63dae3c872f63b7131e032b6".to_string(), wher: crate::Place{ i:3.0, j:0.0, k:2.0 } },
             WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
             WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
             WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
@@ -211,6 +211,27 @@ pub mod createk{
                                                                 ..default()
                                                             },
                                                             scene: nokia.clone(),
+                                                            ..default()
+                                                        }
+                                                    ).id(),
+                                                ), 
+                                                pl: crate::Place{
+                                                    i: i.wher.i,
+                                                    j: i.wher.j,
+                                                    k: i.wher.k,
+                                                }
+                                            } 
+                                        );}
+                "q63dae3c872f63b7131e032b6" => { game.enemies.push( 
+                                            crate::Enemy{ 
+                                                entity: Some(
+                                                    commands.spawn(
+                                                        SceneBundle {
+                                                            transform: Transform {
+                                                                translation: Vec3::new(i.wher.i,i.wher.j,i.wher.k),
+                                                                ..default()
+                                                            },
+                                                            scene: q63dae3c872f63b7131e032b6.clone(),
                                                             ..default()
                                                         }
                                                     ).id(),
