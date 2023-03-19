@@ -8,6 +8,7 @@ use bevy::{ app::App,
             render::mesh::*};
 use {std::f32::consts::PI, rand::Rng};
 mod createk;
+mod ocean
 
 fn main() {
     App::new()
@@ -444,71 +445,8 @@ impl Enemy{
     }
 }
 
-#[derive(Component, Default)]
-struct K{
-    pl:     Place,
-    entity: Option<Entity>,
-    busy:   Option<Entity>,
-    camera_y: f32,
-    camera_x: f32,
-}
-impl K{
-    fn new()
-    -> Self{
-        K{
-            pl: Place::new(),
-            entity: None,
-            busy : None,
-            camera_y: 0.0,
-            camera_x: 0.0,
-        }
-    }
-    fn forward( &self )
-    -> Vec3{
-        Vec3::new( - self.camera_y.cos() * self.camera_x.cos(), self.camera_x.sin(), self.camera_y.sin() * self.camera_x.cos())
-    }
-    fn accum_forward( &self )
-    -> Vec3{
-        Vec3::new( self.pl.i - self.camera_y.cos() * self.camera_x.cos(), self.pl.j + self.camera_x.sin(),self.pl. k + self.camera_y.sin() * self.camera_x.cos())
-    }
-    fn right( &self )
-    -> Vec3{
-        Vec3::new( self.camera_y.sin()* - self.camera_x.cos() , 0.0, - self.camera_y.cos() * self.camera_x.cos())
-    }
-    fn unbusy( &mut self ){
-        self.busy = None;
-    }
-}
-
 #[derive(Component)]
 struct Friendly;
-
-#[derive(Component, Default)]
-struct Vehicle{
-    pl:     Place,
-    entity: Option<Entity>,
-    camera_y: f32,
-    camera_x: f32,
-}
-impl Vehicle{
-    fn new()
-    -> Self{
-        Vehicle{
-            pl: Place::new(),
-            entity: None,
-            camera_y: 0.0,
-            camera_x: 0.0,
-        }
-    }
-    fn forward( &self )
-    -> Vec3{
-        Vec3::new( self.camera_y.cos() * self.camera_x.cos(), self.camera_x.sin(), - self.camera_y.sin() * self.camera_x.cos())
-    }
-    fn passenger( &self )
-    -> Vec3{
-        Vec3{ x: self.pl.i, y: self.pl.j+1.0, z: self.pl.k }
-    }
-}
 
 #[derive(Component, Default)]
 struct Nmo{
@@ -550,64 +488,6 @@ impl Island{
     fn get_level( x:f32, y:f32 )
     -> f32{
         ( x*x+y*y ).sqrt().sin() / ( x*x+y*y ).sqrt()
-    }
-}
-
-#[derive(Component, Default)]
-struct Ocean{
-    entity: Option<Entity>,
-}
-impl Ocean{
-    fn create(
-        mut commands: Commands,
-        mut meshes: ResMut<Assets<Mesh>>,
-        mut materials: ResMut<Assets<StandardMaterial>>,
-    ){
-        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-        let mut vert = vec![];
-        let mut indices = Vec::new();
-        struct Vertex {
-            x: f32,
-            y: f32,
-            z: f32,
-        }
-        for i in 0..=20 {
-            for j in 0..=20 {
-                let x = (i as f32 - 10.0) * 1.0;
-                let z = (j as f32 - 10.0) * 1.0;
-                vert.push([x,0.2*((x+z)*0.2).sin(),z]);
-            }
-        }
-        for i in 0..=19 {
-            for j in 0..=19 {
-                let v0 = i * 21 + j;
-                let v1 = i * 21 + j + 1;
-                let v2 = (i + 1) * 21 + j;
-                let v3 = (i + 1) * 21 + j + 1;
-                indices.push(v0);
-                indices.push(v1);
-                indices.push(v2);
-                indices.push(v2);
-                indices.push(v1);
-                indices.push(v3);
-            }
-        }
-        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION,vert);
-        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0., 1., 0.]; 21*21]);
-        mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]; 21*21]);
-        mesh.set_indices(Some(mesh::Indices::U32(indices)));
-
-        commands.spawn(PbrBundle {
-            mesh: meshes.add(mesh),
-            material: materials.add(Color::rgb(0.0, 0.1, 0.3).into()),
-            ..default()
-        });
-    }
-    fn get_level(
-        time: Res<Time>
-    )
-    -> f32{
-        0.0
     }
 }
 
