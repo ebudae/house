@@ -45,7 +45,7 @@ fn add_light(
 }
 
 fn updateframe(
-    mut game: ResMut<Game>,
+    game: ResMut<Game>,
     mut transforms: Query<&mut Transform>,
     mut time: Res<Time>,
 ){
@@ -99,15 +99,15 @@ fn nomau5(
     }
 }
 
-const mouse_sp: f32 = 0.005;
+const MOUSE_SP: f32 = 0.005;
 fn mouse_motion(
     mut motion_evr: EventReader<bevy::input::mouse::MouseMotion>,
     mut game: ResMut<Game>,
     mut query: Query<(&mut Transform, &Camera)>,
 ){
     for ev in motion_evr.iter() {
-        game.player.camera_x -= ev.delta.y * mouse_sp;
-        game.player.camera_y -= ev.delta.x * mouse_sp;
+        game.player.camera_x -= ev.delta.y * MOUSE_SP;
+        game.player.camera_y -= ev.delta.x * MOUSE_SP;
         for (mut transform, _) in query.iter_mut() {
             transform.look_at( game.player.forward(), Vec3::Y)
             //transform.scale = Vec3::new(1.0, 1.0, 1.0);
