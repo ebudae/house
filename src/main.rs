@@ -8,6 +8,7 @@ use bevy::{ app::App,
             render::mesh::*};
 use {std::f32::consts::PI, rand::Rng};
 mod createk;
+mod ocean;
 
 fn main() {
     App::new()
