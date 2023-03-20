@@ -9,6 +9,8 @@ use bevy::{ app::App,
 use {std::f32::consts::PI, rand::Rng};
 mod createk;
 mod ocean;
+mod k;
+mod vehicle;
 
 fn main() {
     App::new()
@@ -19,7 +21,7 @@ fn main() {
         .add_startup_system(setup)
         .add_startup_system(createk::createk::createk)
         .add_startup_system(add_light)
-        .add_startup_system(Ocean::create)
+        .add_startup_system(ocean::ocean::Ocean::create)
         .add_system(mouse_motion)
         .add_system(nomau5)
         .add_system(move_player.in_set( OnUpdate(TravelMode::Walk) ))
@@ -48,7 +50,7 @@ fn add_light(
 fn updateframe(
     game: ResMut<Game>,
     mut transforms: Query<&mut Transform>,
-    mut time: Res<Time>,
+    time: Res<Time>,
 ){
     *transforms.get_mut(game.player.entity.unwrap()).unwrap() = Transform {
         translation: game.player.pl.to_vec3(),
@@ -113,7 +115,7 @@ fn mouse_motion(
             transform.look_at( game.player.forward(), Vec3::Y)
             //transform.scale = Vec3::new(1.0, 1.0, 1.0);
         }
-        if let Some( l ) = game.player.busy{
+        if let Some( _l ) = game.player.busy{
             let m = game.player.accum_forward();
             game.enemies[0].pl.from_vec3( m);
         }
@@ -296,7 +298,7 @@ fn move_player(
         //search closest enemy, make it chil of player or undo
         let k = game.player.accum_forward();
         game.enemies[0].pl.from_vec3( k );
-        if let Some( l ) = game.player.busy{
+        if let Some( _l ) = game.player.busy{
             //*transforms.get_mut(game.player.busy.unwrap()).unwrap() = Transform::from_translation( game.player.accum_forward()) ;
             //game.player.busy.unwrap().pl.from_vec3( game.player.forward() );
             //commands.add( RemoveParent{ child: game.player.busy.unwrap() } );
@@ -313,7 +315,7 @@ fn move_player(
     }
 
     if moved {
-        if let Some( l ) = game.player.busy{
+        if let Some( _l ) = game.player.busy{
             let k = game.player.accum_forward();
             game.enemies[0].pl.from_vec3( k );
             }
@@ -377,9 +379,9 @@ fn move_vhc(
 fn enemiesthink(
     mut game: ResMut<Game>,
 ){
-    for enemy in &mut game.enemies{
+    //for enemy in &mut game.enemies{
     //    enemy.pl.i += rand::thread_rng().gen_range(-0.1..0.1) *0.005 ;
-    }
+    //}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
@@ -394,7 +396,7 @@ enum TravelMode{
 struct Health (f32);
 
 #[derive(Component, Default, Clone)]
-struct Place{
+pub struct Place{
     i: f32,
     j: f32,
     k: f32,
@@ -445,71 +447,8 @@ impl Enemy{
     }
 }
 
-#[derive(Component, Default)]
-struct K{
-    pl:     Place,
-    entity: Option<Entity>,
-    busy:   Option<Entity>,
-    camera_y: f32,
-    camera_x: f32,
-}
-impl K{
-    fn new()
-    -> Self{
-        K{
-            pl: Place::new(),
-            entity: None,
-            busy : None,
-            camera_y: 0.0,
-            camera_x: 0.0,
-        }
-    }
-    fn forward( &self )
-    -> Vec3{
-        Vec3::new( - self.camera_y.cos() * self.camera_x.cos(), self.camera_x.sin(), self.camera_y.sin() * self.camera_x.cos())
-    }
-    fn accum_forward( &self )
-    -> Vec3{
-        Vec3::new( self.pl.i - self.camera_y.cos() * self.camera_x.cos(), self.pl.j + self.camera_x.sin(),self.pl. k + self.camera_y.sin() * self.camera_x.cos())
-    }
-    fn right( &self )
-    -> Vec3{
-        Vec3::new( self.camera_y.sin()* - self.camera_x.cos() , 0.0, - self.camera_y.cos() * self.camera_x.cos())
-    }
-    fn unbusy( &mut self ){
-        self.busy = None;
-    }
-}
-
 #[derive(Component)]
 struct Friendly;
-
-#[derive(Component, Default)]
-struct Vehicle{
-    pl:     Place,
-    entity: Option<Entity>,
-    camera_y: f32,
-    camera_x: f32,
-}
-impl Vehicle{
-    fn new()
-    -> Self{
-        Vehicle{
-            pl: Place::new(),
-            entity: None,
-            camera_y: 0.0,
-            camera_x: 0.0,
-        }
-    }
-    fn forward( &self )
-    -> Vec3{
-        Vec3::new( self.camera_y.cos() * self.camera_x.cos(), self.camera_x.sin(), - self.camera_y.sin() * self.camera_x.cos())
-    }
-    fn passenger( &self )
-    -> Vec3{
-        Vec3{ x: self.pl.i, y: self.pl.j+1.0, z: self.pl.k }
-    }
-}
 
 #[derive(Component, Default)]
 struct Nmo{
@@ -554,70 +493,12 @@ impl Island{
     }
 }
 
-#[derive(Component, Default)]
-struct Ocean{
-    entity: Option<Entity>,
-}
-impl Ocean{
-    fn create(
-        mut commands: Commands,
-        mut meshes: ResMut<Assets<Mesh>>,
-        mut materials: ResMut<Assets<StandardMaterial>>,
-    ){
-        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-        let mut vert = vec![];
-        let mut indices = Vec::new();
-        struct Vertex {
-            x: f32,
-            y: f32,
-            z: f32,
-        }
-        for i in 0..=20 {
-            for j in 0..=20 {
-                let x = (i as f32 - 10.0) * 1.0;
-                let z = (j as f32 - 10.0) * 1.0;
-                vert.push([x,0.2*((x+z)*0.2).sin(),z]);
-            }
-        }
-        for i in 0..=19 {
-            for j in 0..=19 {
-                let v0 = i * 21 + j;
-                let v1 = i * 21 + j + 1;
-                let v2 = (i + 1) * 21 + j;
-                let v3 = (i + 1) * 21 + j + 1;
-                indices.push(v0);
-                indices.push(v1);
-                indices.push(v2);
-                indices.push(v2);
-                indices.push(v1);
-                indices.push(v3);
-            }
-        }
-        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION,vert);
-        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0., 1., 0.]; 21*21]);
-        mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]; 21*21]);
-        mesh.set_indices(Some(mesh::Indices::U32(indices)));
-
-        commands.spawn(PbrBundle {
-            mesh: meshes.add(mesh),
-            material: materials.add(Color::rgb(0.0, 0.1, 0.3).into()),
-            ..default()
-        });
-    }
-    fn get_level(
-        time: Res<Time>
-    )
-    -> f32{
-        0.0
-    }
-}
-
 #[derive(Bundle)]
 struct PlayerBundle {
     pl: Place,
     health: Health,
     price: Price,
-    _p: K,
+    _p: k::k::K,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
@@ -630,9 +511,9 @@ enum GameState {
 #[derive(Resource, Default)]
 pub struct Game {
     eye: Option<Entity>,
-    player: K,
-    vehicle: Vehicle,
+    player: k::k::K,
+    vehicle: vehicle::vehicle::Vehicle,
     enemies: Vec<Enemy>,
     sand: Island,
-    ocean: Ocean,
+    ocean: ocean::ocean::Ocean,
 }

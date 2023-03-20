@@ -7,11 +7,11 @@ pub mod ocean{
             render::mesh::*};
     
     #[derive(Component, Default)]
-    struct Ocean{
-        entity: Option<Entity>,
+    pub struct Ocean{
+        pub entity: Option<Entity>,
     }
     impl Ocean{
-        fn create(
+        pub fn create(
             mut commands: Commands,
             mut meshes: ResMut<Assets<Mesh>>,
             mut materials: ResMut<Assets<StandardMaterial>>,
@@ -57,10 +57,10 @@ pub mod ocean{
             });
         }
         fn get_level(
-            time: Res<Time>
+            _time: Res<Time>
         )
         -> f32{
-            0.0
+            0.0 * _time.elapsed_seconds()
         }
     }
 }
