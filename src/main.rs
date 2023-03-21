@@ -19,7 +19,7 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.99, 0.99, 0.9)))
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
-        .add_startup_system(createk::createk::createk)
+        .add_startup_system(createk::createk)
         .add_startup_system(add_light)
         .add_startup_system(ocean::ocean::Ocean::create)
         .add_system(mouse_motion)
