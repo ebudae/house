@@ -9,7 +9,7 @@ use bevy::{ app::App,
 use {std::f32::consts::PI, rand::Rng};
 mod createk;
 mod ocean;
-mod k;
+mod eye;
 mod vehicle;
 
 fn main() {
@@ -138,20 +138,20 @@ fn setup(
         .id()
     );
 
-    commands.insert_resource(GoalsReached { 
-        main_goal0: false,
-        main_goal1: false,
-        main_goal2: false,
-        main_goal3: false,
-        main_goal4: false,
-        main_goal5: false,
-        bonus0: false,
-        bonus1: false,
-        bonus2: false,
-        bonus3: false,
-        bonus4: false,
-        bonus5: false,
-    });
+    // commands.insert_resource(GoalsReached { 
+    //     main_goal0: false,
+    //     main_goal1: false,
+    //     main_goal2: false,
+    //     main_goal3: false,
+    //     main_goal4: false,
+    //     main_goal5: false,
+    //     bonus0: false,
+    //     bonus1: false,
+    //     bonus2: false,
+    //     bonus3: false,
+    //     bonus4: false,
+    //     bonus5: false,
+    //});
     game.sand.entity = Some(
         commands.spawn(SceneBundle {
             transform: Transform {
@@ -377,7 +377,7 @@ fn move_vhc(
 }
 
 fn enemiesthink(
-    mut game: ResMut<Game>,
+    //mut game: ResMut<Game>,
 ){
     //for enemy in &mut game.enemies{
     //    enemy.pl.i += rand::thread_rng().gen_range(-0.1..0.1) *0.005 ;
@@ -450,36 +450,36 @@ impl Enemy{
 #[derive(Component)]
 struct Friendly;
 
-#[derive(Component, Default)]
-struct Nmo{
-    pl:     Place,
-    entity: Option<Entity>,
-}
-impl Nmo{
-    fn new()
-    -> Self{
-        Nmo{
-            pl: Place::new(),
-            entity: None,
-        }
-    }
-}
+//#[derive(Component, Default)]
+//struct Nmo{
+//    pl:     Place,
+//    entity: Option<Entity>,
+//}
+//impl Nmo{
+//    fn new()
+//    -> Self{
+//        Nmo{
+//            pl: Place::new(),
+//            entity: None,
+//        }
+//    }
+//}
 
-#[derive(Resource)]
-struct GoalsReached {
-    main_goal0: bool,
-    main_goal1: bool,
-    main_goal2: bool,
-    main_goal3: bool,
-    main_goal4: bool,
-    main_goal5: bool,
-    bonus0: bool,
-    bonus1: bool,
-    bonus2: bool,
-    bonus3: bool,
-    bonus4: bool,
-    bonus5: bool,
-}
+//#[derive(Resource)]
+//struct GoalsReached {
+//    main_goal0: bool,
+//    main_goal1: bool,
+//    main_goal2: bool,
+//    main_goal3: bool,
+//    main_goal4: bool,
+//    main_goal5: bool,
+//    bonus0: bool,
+//    bonus1: bool,
+//    bonus2: bool,
+//    bonus3: bool,
+//    bonus4: bool,
+//    bonus5: bool,
+//}
 
 #[derive(Component, Default)]
 struct Island{
@@ -498,7 +498,7 @@ struct PlayerBundle {
     pl: Place,
     health: Health,
     price: Price,
-    _p: k::k::K,
+    _p:  eye::K,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
@@ -511,8 +511,8 @@ enum GameState {
 #[derive(Resource, Default)]
 pub struct Game {
     eye: Option<Entity>,
-    player: k::k::K,
-    vehicle: vehicle::vehicle::Vehicle,
+    player: eye::K,
+    vehicle: vehicle::Vehicle,
     enemies: Vec<Enemy>,
     sand: Island,
     ocean: ocean::ocean::Ocean,
