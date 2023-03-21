@@ -19,14 +19,13 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.99, 0.99, 0.9)))
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
-        .add_startup_system(createk::createk)
+        .add_startup_system(createk::createk::createk)
         .add_startup_system(add_light)
-        .add_startup_system(ocean::ocean::Ocean::create)
+        .add_startup_system(ocean::ocean::Ocean::register)
         .add_system(mouse_motion)
         .add_system(nomau5)
         .add_system(move_player.in_set( OnUpdate(TravelMode::Walk) ))
         .add_system(move_vhc.in_set( OnUpdate(TravelMode::Vehicle) ))
-        .add_system(enemiesthink)
         .add_system(updateframe)
         .run();
 }
@@ -288,16 +287,15 @@ fn move_player(
     }
     
     let q = Island::get_level( game.player.pl.i, game.player.pl.k );
-    let j =  0.2*(( game.player.pl.i + game.player.pl.k )*0.2).sin();
-    game.player.pl.j = if q < j{ j }else { q };
+    let j =  0.2*(( game.player.pl.i + game.player.pl.k )*0.5).sin();
+    game.player.pl.j = j + 1.0 ; //if q < j{ j }else { q };
 
     if keyboard_input.just_pressed(KeyCode::Z) {
         let k = game.vehicle.passenger();
         game.player.pl.from_vec3( k );
         next_state.set(TravelMode::Vehicle);
     }
-    //game.player.pl.j = 0.0;
-
+    
     if keyboard_input.just_pressed(KeyCode::Space) {
         //search closest enemy, make it chil of player or undo
         let k = game.player.accum_forward();
@@ -342,17 +340,19 @@ fn move_vhc(
     if keyboard_input.pressed(KeyCode::W) {
         let k = game.vehicle.forward();
         game.vehicle.pl.i += 0.4 * k.x;
-        game.vehicle.pl.j += 0.4 * k.y;
         game.vehicle.pl.k += 0.4 * k.z;
         moved = true;
     }
     if keyboard_input.pressed(KeyCode::S) {
         let k = game.vehicle.forward();
         game.vehicle.pl.i -= 0.4 * k.x;
-        game.vehicle.pl.j -= 0.4 * k.y;
         game.vehicle.pl.k -= 0.4 * k.z;
         moved = true;
     }
+
+    let j =  0.2*(( game.vehicle.pl.i + game.vehicle.pl.k )*0.5).sin();
+    game.vehicle.pl.j = j ;
+
     if keyboard_input.pressed(KeyCode::A) {
         game.player.camera_y += 0.02;
         game.vehicle.camera_y += 0.02;
@@ -367,7 +367,6 @@ fn move_vhc(
     if keyboard_input.just_pressed(KeyCode::Z) {
         next_state.set(TravelMode::Walk);
     }
-    //game.player.pl.j = 0.0;
 
     if moved {
         *transforms.get_mut(game.vehicle.entity.unwrap()).unwrap() = Transform {
@@ -380,13 +379,6 @@ fn move_vhc(
     }
 }
 
-fn enemiesthink(
-    //mut game: ResMut<Game>,
-){
-    //for enemy in &mut game.enemies{
-    //    enemy.pl.i += rand::thread_rng().gen_range(-0.1..0.1) *0.005 ;
-    //}
-}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
 //#[derive(Resource, Default)]
@@ -502,7 +494,7 @@ struct PlayerBundle {
     pl: Place,
     health: Health,
     price: Price,
-    _p:  eye::K,
+    _p:  eye::eye::K,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
@@ -515,8 +507,8 @@ enum GameState {
 #[derive(Resource, Default)]
 pub struct Game {
     eye: Option<Entity>,
-    player: eye::K,
-    vehicle: vehicle::Vehicle,
+    player: eye::eye::K,
+    vehicle: vehicle::vehicle::Vehicle,
     enemies: Vec<Enemy>,
     sand: Island,
     ocean: ocean::ocean::Ocean,

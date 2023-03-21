@@ -6,12 +6,60 @@ pub mod ocean{
             render::mesh,
             render::mesh::*};
     
+    pub struct Oceanpart{
+        //pub entity: Option<Entity>,
+        mesh: Mesh,
+        vert: Vec<[f32; 3]>,
+        indices: Vec<u32>,
+    }
+    impl Oceanpart{
+        pub fn create( mut self, x: u32, z: u32, k: u32, x_offset: f32, z_offset: f32 )
+        {
+            self.mesh = Mesh::new(PrimitiveTopology::TriangleList);
+            self.vert = vec![];
+            self.indices = Vec::new();
+            
+            for i in 0..= ( 2*x ) {
+                for j in 0..= ( 2*z ) {
+                    let x = (i as f32 - (k*x) as f32) * k as f32;
+                    let z = (j as f32 - (k*z) as f32) * k as f32;
+                    self.vert.push([x+x_offset,0.0,z+z_offset]);
+                }
+            }
+            for i in 0.. ( 2*x ) {
+                for j in 0.. ( 2*z ) {
+                    let v0 = i * ( 2*z+1 ) + j;
+                    let v1 = i * ( 2*z+1 ) + j + 1;
+                    let v2 = (i + 1) * ( 2*z+1 ) + j;
+                    let v3 = (i + 1) * ( 2*z+1 ) + j + 1;
+                    self.indices.push(v0);
+                    self.indices.push(v1);
+                    self.indices.push(v2);
+                    self.indices.push(v2);
+                    self.indices.push(v1);
+                    self.indices.push(v3);
+                }
+            }
+
+            self.mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION,self.vert);
+            self.mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0., 1., 0.]; 21*21]);
+            self.mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]; 21*21]);
+            self.mesh.set_indices(Some(mesh::Indices::U32(self.indices)));
+
+        }
+    }
+
     #[derive(Component, Default)]
     pub struct Ocean{
         pub entity: Option<Entity>,
+        pub mesh_c: Option<Mesh>,
+        pub mesh: Option<Mesh>,
     }
     impl Ocean{
-        pub fn create(
+        //pub fn create(){}
+
+        //pub fn at(){}
+        pub fn register(
             mut commands: Commands,
             mut meshes: ResMut<Assets<Mesh>>,
             mut materials: ResMut<Assets<StandardMaterial>>,
@@ -28,7 +76,7 @@ pub mod ocean{
                 for j in 0..=20 {
                     let x = (i as f32 - 10.0) * 1.0;
                     let z = (j as f32 - 10.0) * 1.0;
-                    vert.push([x,0.2*((x+z)*0.2).sin(),z]);
+                    vert.push([x,0.2*((x+z)*0.5).sin(),z]);
                 }
             }
             for i in 0..=19 {
