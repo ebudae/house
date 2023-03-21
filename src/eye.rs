@@ -9,16 +9,16 @@ pub struct K{
     pub camera_x: f32,
 }
 impl K{
-    pub fn new()
-    -> Self{
-        K{
-            pl: crate::Place::new(),
-            entity: None,
-            busy : None,
-            camera_y: 0.0,
-            camera_x: 0.0,
-        }
-    }
+//    pub fn new()
+//    -> Self{
+//        K{
+//            pl: crate::Place::new(),
+//            entity: None,
+//            busy : None,
+//            camera_y: 0.0,
+//            camera_x: 0.0,
+//        }
+//    }
     pub fn forward( &self )
     -> Vec3{
         Vec3::new( - self.camera_y.cos() * self.camera_x.cos(), self.camera_x.sin(), self.camera_y.sin() * self.camera_x.cos())

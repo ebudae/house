@@ -286,6 +286,10 @@ fn move_player(
         game.player.pl.k -= 0.1 * k.z;
         moved = true;
     }
+
+    let q = Island::get_level( game.player.pl.i, game.player.pl.k );
+    let j =  0.2*(( game.player.pl.i + game.player.pl.k )*0.2).sin();
+    game.player.pl.j = if q < j{ j }else { q };
     
     if keyboard_input.just_pressed(KeyCode::Z) {
         let k = game.vehicle.passenger();
@@ -402,14 +406,14 @@ pub struct Place{
     k: f32,
 }
 impl Place{
-    fn new()
-    -> Self{
-        Place{
-            i: 0.0,
-            j: 0.0,
-            k: 0.0,
-        } 
-    }
+//    fn new()
+//    -> Self{
+//        Place{
+//            i: 0.0,
+//            j: 0.0,
+//            k: 0.0,
+//        } 
+//    }
     fn rand()
     -> Place{
         Place{

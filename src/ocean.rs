@@ -19,11 +19,11 @@ pub mod ocean{
             let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
             let mut vert = vec![];
             let mut indices = Vec::new();
-            struct Vertex {
-                x: f32,
-                y: f32,
-                z: f32,
-            }
+            // struct Vertex {
+            //     x: f32,
+            //     y: f32,
+            //     z: f32,
+            // }
             for i in 0..=20 {
                 for j in 0..=20 {
                     let x = (i as f32 - 10.0) * 1.0;
@@ -55,12 +55,6 @@ pub mod ocean{
                 material: materials.add(Color::rgb(0.0, 0.1, 0.3).into()),
                 ..default()
             });
-        }
-        fn get_level(
-            _time: Res<Time>
-        )
-        -> f32{
-            0.0 * _time.elapsed_seconds()
         }
     }
 }
