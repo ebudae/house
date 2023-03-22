@@ -11,6 +11,7 @@ mod createk;
 mod ocean;
 mod eye;
 mod vehicle;
+mod createsand;
 
 fn main() {
     App::new()
@@ -22,11 +23,13 @@ fn main() {
         .add_startup_system(createk::createk::createk)
         .add_startup_system(add_light)
         .add_startup_system(ocean::ocean::Ocean::register)
+        .add_startup_system(createsand::createsand::createsand)
         .add_system(mouse_motion)
         .add_system(nomau5)
         .add_system(move_player.in_set( OnUpdate(TravelMode::Walk) ))
         .add_system(move_vhc.in_set( OnUpdate(TravelMode::Vehicle) ))
         .add_system(updateframe)
+        .add_system(ocean::ocean::Ocean::update)
         .run();
 }
 
@@ -40,6 +43,26 @@ fn add_light(
                 ..Default::default()
             },
         transform: Transform::from_translation(Vec3::new(0.0, 10.0, 0.0)),
+        ..Default::default()
+    });
+    commands.spawn(PointLightBundle {
+        point_light: PointLight{
+                intensity: 30000.0,
+                range: 10.0 ,
+                color: Color::GREEN,
+                ..Default::default()
+            },
+        transform: Transform::from_translation(Vec3::new(10.0,10.0, 0.0)),
+        ..Default::default()
+    });
+    commands.spawn(PointLightBundle {
+        point_light: PointLight{
+                intensity: 30000.0,
+                radius: 10.0 ,
+                color: Color::BLUE,
+                ..Default::default()
+            },
+        transform: Transform::from_translation(Vec3::new(0.0,10.0, 30.0)),
         ..Default::default()
     });
     ambient_light.color = Color::WHITE;
@@ -288,7 +311,7 @@ fn move_player(
     
     let q = Island::get_level( game.player.pl.i, game.player.pl.k );
     let j =  0.2*(( game.player.pl.i + game.player.pl.k )*0.5).sin();
-    game.player.pl.j = j + 1.0 ; //if q < j{ j }else { q };
+    //game.player.pl.j = j + 1.0 ; //if q < j{ j }else { q };
 
     if keyboard_input.just_pressed(KeyCode::Z) {
         let k = game.vehicle.passenger();
@@ -333,6 +356,7 @@ fn move_vhc(
     mut game: ResMut<Game>,
     mut transforms: Query<&mut Transform>,
     mut next_state: ResMut<NextState<TravelMode>>,
+    time: Res<Time>,
     //mut walkingmode: ResMut<TravelMode>,
 ){
     let mut moved = false;
@@ -350,7 +374,7 @@ fn move_vhc(
         moved = true;
     }
 
-    let j =  0.2*(( game.vehicle.pl.i + game.vehicle.pl.k )*0.5).sin();
+    let j =  0.2*(( time.elapsed_seconds() + game.vehicle.pl.i + game.vehicle.pl.k )*0.5).sin();
     game.vehicle.pl.j = j ;
 
     if keyboard_input.pressed(KeyCode::A) {
