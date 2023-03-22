@@ -29,6 +29,7 @@ fn main() {
         .add_system(move_player.in_set( OnUpdate(TravelMode::Walk) ))
         .add_system(move_vhc.in_set( OnUpdate(TravelMode::Vehicle) ))
         .add_system(updateframe)
+        .add_system( update_boat )
         .add_system(ocean::ocean::Ocean::update)
         .run();
 }
@@ -66,7 +67,7 @@ fn add_light(
         ..Default::default()
     });
     ambient_light.color = Color::WHITE;
-    ambient_light.brightness = 0.3;
+    ambient_light.brightness = 0.6;
 }
 
 fn updateframe(
@@ -350,6 +351,20 @@ fn move_player(
         };   
     }
 }
+fn update_boat(
+    mut game: ResMut<Game>,
+    mut transforms: Query<&mut Transform>,
+    time: Res<Time>,
+){
+    game.vehicle.pl.j = ( time.elapsed_seconds() + game.vehicle.pl.i + game.vehicle.pl.k ).sin();
+    *transforms.get_mut(game.vehicle.entity.unwrap()).unwrap() = Transform {
+        translation: Vec3::new( game.vehicle.pl.i, game.vehicle.pl.j, game.vehicle.pl.k ),
+        rotation: math::f32::Quat::from_rotation_y( game.vehicle.camera_y ),
+        scale: Vec3::new( 10.0, 10.0,10.0 ),
+    };
+    //let k = game.vehicle.passenger();
+    //game.player.pl.from_vec3( k );
+}
 fn move_vhc(
     keyboard_input: Res<Input<KeyCode>>,
     //mut commands: Commands,
@@ -373,10 +388,7 @@ fn move_vhc(
         game.vehicle.pl.k -= 0.4 * k.z;
         moved = true;
     }
-
-    let j =  0.2*(( time.elapsed_seconds() + game.vehicle.pl.i + game.vehicle.pl.k )*0.5).sin();
-    game.vehicle.pl.j = j ;
-
+        
     if keyboard_input.pressed(KeyCode::A) {
         game.player.camera_y += 0.02;
         game.vehicle.camera_y += 0.02;
@@ -398,9 +410,9 @@ fn move_vhc(
             rotation: math::f32::Quat::from_rotation_y( game.vehicle.camera_y ),
             ..default()
         };
-        let k = game.vehicle.passenger();
-        game.player.pl.from_vec3( k );
     }
+    let k = game.vehicle.passenger();
+    game.player.pl.from_vec3( k );
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
