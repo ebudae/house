@@ -21,51 +21,51 @@ pub mod createk{
         let nokia = asset_server.load("nokia.glb#Scene0");
         struct WhatToCreate{
             what: String,
-            wher: crate::Place,
+            wher: crate::place::place::Place,
         }
 
         let elems: Vec<WhatToCreate> = vec![
-            WhatToCreate{ what:  "q63dae3c872f63b7131e032b6".to_string(), wher: crate::Place{ i:3.0, j:0.0, k:2.0 } },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "question_mark".to_string(), wher: crate::Place::rand() },
-            WhatToCreate{ what: "nokia".to_string(), wher: crate::Place{ i:3.0, j:0.0, k:2.0 } },
+            WhatToCreate{ what:  "q63dae3c872f63b7131e032b6".to_string(), wher: crate::place::place::Place{ i:3.0, j:0.0, k:2.0 } },
+            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
+            WhatToCreate{ what: "nokia".to_string(), wher: crate::place::place::Place{ i:3.0, j:0.0, k:2.0 } },
         ];
 
         for i in elems{
@@ -88,7 +88,7 @@ pub mod createk{
                                                         }
                                                     ).id(),
                                                 ), 
-                                                pl: crate::Place{
+                                                pl: crate::place::place::Place{
                                                     i: i.wher.i,
                                                     j: i.wher.j,
                                                     k: i.wher.k,
@@ -109,7 +109,7 @@ pub mod createk{
                                                         }
                                                     ).id(),
                                                 ), 
-                                                pl: crate::Place{
+                                                pl: crate::place::place::Place{
                                                     i: i.wher.i,
                                                     j: i.wher.j,
                                                     k: i.wher.k,
@@ -131,7 +131,7 @@ pub mod createk{
                                                         }
                                                     ).id(),
                                                 ), 
-                                                pl: crate::Place{
+                                                pl: crate::place::place::Place{
                                                     i: i.wher.i,
                                                     j: i.wher.j,
                                                     k: i.wher.k,
@@ -152,7 +152,7 @@ pub mod createk{
                                                         }
                                                     ).id(),
                                                 ), 
-                                                pl: crate::Place{
+                                                pl: crate::place::place::Place{
                                                     i: i.wher.i,
                                                     j: i.wher.j,
                                                     k: i.wher.k,
@@ -173,7 +173,7 @@ pub mod createk{
                                                         }
                                                     ).id(),
                                                 ), 
-                                                pl: crate::Place{
+                                                pl: crate::place::place::Place{
                                                     i: i.wher.i,
                                                     j: i.wher.j,
                                                     k: i.wher.k,
@@ -194,7 +194,7 @@ pub mod createk{
                                                         }
                                                     ).id(),
                                                 ), 
-                                                pl: crate::Place{
+                                                pl: crate::place::place::Place{
                                                     i: i.wher.i,
                                                     j: i.wher.j,
                                                     k: i.wher.k,
@@ -215,7 +215,7 @@ pub mod createk{
                                                         }
                                                     ).id(),
                                                 ), 
-                                                pl: crate::Place{
+                                                pl: crate::place::place::Place{
                                                     i: i.wher.i,
                                                     j: i.wher.j,
                                                     k: i.wher.k,
@@ -236,7 +236,7 @@ pub mod createk{
                                                         }
                                                     ).id(),
                                                 ), 
-                                                pl: crate::Place{
+                                                pl: crate::place::place::Place{
                                                     i: i.wher.i,
                                                     j: i.wher.j,
                                                     k: i.wher.k,

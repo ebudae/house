@@ -12,6 +12,7 @@ mod ocean;
 mod eye;
 mod vehicle;
 mod createsand;
+mod place;
 
 fn main() {
     App::new()
@@ -86,15 +87,15 @@ fn updateframe(
         rotation: math::f32::Quat::from_rotation_y( game.vehicle.camera_y ),
         scale: Vec3::new( 10.0, 10.0,10.0 ),
     };
-    *transforms.get_mut(game.sand.entity.unwrap()).unwrap() = Transform {
-        translation: Vec3::new(
-            0.0,
-            -10.0,
-            0.0,
-        ),
-        scale: Vec3::new( time.elapsed_seconds().sin(),time.elapsed_seconds().sin(), time.elapsed_seconds().sin() ),
-        ..default()
-    };
+    //*transforms.get_mut(game.sand.entity.unwrap()).unwrap() = Transform {
+    //    translation: Vec3::new(
+    //        0.0,
+    //        -10.0,
+    //        0.0,
+    //    ),
+    //    scale: Vec3::new( time.elapsed_seconds().sin(),time.elapsed_seconds().sin(), time.elapsed_seconds().sin() ),
+    //    ..default()
+    //};
     for i in &game.enemies{
         *transforms.get_mut(i.entity.unwrap()).unwrap() = Transform {
             translation: Vec3::new(
@@ -182,7 +183,7 @@ fn setup(
                 rotation: Quat::from_rotation_y(-PI / 2.),
                 ..default()
             },
-            scene: asset_server.load("mesh0 .glb"),
+            //scene: asset_server.load("mesh0 .glb"),
             ..default()
         })
         .id(),
@@ -351,6 +352,7 @@ fn move_player(
         };   
     }
 }
+
 fn update_boat(
     mut game: ResMut<Game>,
     mut transforms: Query<&mut Transform>,
@@ -365,6 +367,7 @@ fn update_boat(
     //let k = game.vehicle.passenger();
     //game.player.pl.from_vec3( k );
 }
+
 fn move_vhc(
     keyboard_input: Res<Input<KeyCode>>,
     //mut commands: Commands,
@@ -427,53 +430,19 @@ enum TravelMode{
 #[derive(Component)]
 struct Health (f32);
 
-#[derive(Component, Default, Clone)]
-pub struct Place{
-    i: f32,
-    j: f32,
-    k: f32,
-}
-impl Place{
-    fn new()
-    -> Self{
-        Place{
-            i: 0.0,
-            j: 0.0,
-            k: 0.0,
-        } 
-    }
-    fn rand()
-    -> Place{
-        Place{
-            i: rand::thread_rng().gen_range(-40.0..40.0),
-            j: 0.0,
-            k: rand::thread_rng().gen_range(-40.0..40.0),
-        } 
-    }
-    fn from_vec3( &mut self, k:Vec3 ){
-        self.i = k.x;
-        self.j = k.y;
-        self.k = k.z;
-    }
-    fn to_vec3( &self )
-    -> Vec3{
-        Vec3::new( self.i, self.j, self.k )
-    }
-}
-
 #[derive(Component, Default)]
 struct Price (f32);
 
 #[derive(Component, Default, Clone)]
 struct Enemy{
-    pl: Place,
+    pl: place::place::Place,
     entity: Option<Entity>,
 }
 impl Enemy{
     fn new()
     -> Enemy{
         Enemy{
-            pl: Place::new(),
+            pl: place::place::Place::new(),
             entity: None,
         }
     }
@@ -527,7 +496,7 @@ impl Island{
 
 #[derive(Bundle)]
 struct PlayerBundle {
-    pl: Place,
+    pl: place::place::Place,
     health: Health,
     price: Price,
     _p:  eye::eye::K,

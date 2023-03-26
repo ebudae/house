@@ -6,6 +6,8 @@ pub mod ocean{
             render::mesh,
             render::mesh::*};
     
+    type float = f32;
+
     pub struct Oceanpart{
         //pub entity: Option<Entity>,
         mesh: Mesh,
@@ -62,6 +64,21 @@ pub mod ocean{
 
         }
     }
+
+    struct OceanWave{
+        speed: float,
+        ampl: float,
+        x: float,
+        z: float,
+    }
+    impl OceanWave{
+        fn get( self,x: float,z: float )
+        -> float
+        {
+            self.ampl * ( self.speed * (self.x * x + self.z * z) ).sin()
+        }
+    }
+
     #[derive(Component, Default)]
     pub struct Nmesh;
     #[derive(Component, Default)]
@@ -70,6 +87,7 @@ pub mod ocean{
         pub mesh_c: Option<Oceanpart>,
         pub mesh: Option<Mesh>,
         time: f32,
+        oceanwaves: Vec<OceanWave>,
     }
     impl Ocean{
         //pub fn create( mut self ){
@@ -80,22 +98,17 @@ pub mod ocean{
         pub fn at(){}
         pub fn update(
             time: Res<Time>,
-            //q: Query<Entity, With<Nmesh>>,
-            //mut commands: Commands,
             mut query: Query<(&Transform, &Handle<Mesh>, With<Nmesh>)>,
             mut assets: ResMut<Assets<Mesh>>
         ){
             //self.time = time.elapsed_seconds();
             for (transform, handle, _) in query.iter(){
-                //let (transform, handle) = i;
                 if let Some( mut mesh ) = assets.get_mut(&handle){
-                //if mesh.is_some() {
                     let positions = mesh.attribute(Mesh::ATTRIBUTE_POSITION).unwrap();
                     if let VertexAttributeValues::Float32x3(thing) = positions {
                         let mut temporary = Vec::new();
                         for i in thing {
                             let temp = Vec3::new( i[0], ( time.elapsed_seconds()+i[0]+i[2] ).sin(), i[2]);
-                            // Modify temp here
                             temporary.push(temp);
                         }
 

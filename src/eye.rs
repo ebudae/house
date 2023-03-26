@@ -3,7 +3,7 @@ pub mod eye{
 
     #[derive(Component, Default)]
     pub struct K{
-        pub pl:     crate::Place,
+        pub pl:     crate::place::place::Place,
         pub entity: Option<Entity>,
         pub busy:   Option<Entity>,
         pub camera_y: f32,

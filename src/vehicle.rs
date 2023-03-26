@@ -3,7 +3,7 @@ pub mod vehicle{
 
     #[derive(Component, Default)]
     pub struct Vehicle{
-        pub pl:     crate::Place,
+        pub pl:     crate::place::place::Place,
         pub entity: Option<Entity>,
         pub camera_y: f32,
         pub camera_x: f32,
@@ -12,7 +12,7 @@ pub mod vehicle{
         pub fn new()
         -> Self{
             Vehicle{
-                pl:  crate::Place::new(),
+                pl:  crate::place::place::Place::new(),
                 entity: None,
                 camera_y: 0.0,
                 camera_x: 0.0,
