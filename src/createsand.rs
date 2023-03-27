@@ -11,7 +11,6 @@ pub mod createsand{
     pub fn createsand(
         mut commands: Commands,
         asset_server: Res<AssetServer>,
-        mut game: ResMut<crate::Game>,
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
         mut images: ResMut<Assets<Image>>
