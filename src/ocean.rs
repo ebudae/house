@@ -65,17 +65,28 @@ pub mod ocean{
         }
     }
 
-    struct OceanWave{
-        speed: float,
-        ampl: float,
-        x: float,
-        z: float,
+    #[derive(Clone,Copy)]
+    pub struct OceanWave{
+        pub speed: float,
+        pub ampl: float,
+        pub x: float,
+        pub z: float,
     }
     impl OceanWave{
-        fn get( self,x: float,z: float )
+        pub fn new()
+        -> Self
+        {
+            OceanWave{
+                speed: 0.5,
+                ampl: 0.1,
+                x: 1.0,
+                z: 1.0,
+            }
+        }
+        fn get( self,x: float,z: float,t:float )
         -> float
         {
-            self.ampl * ( self.speed * (self.x * x + self.z * z) ).sin()
+            self.ampl * ( self.speed * (self.x*x+ self.z*z+t) ).sin()
         }
     }
 
@@ -87,7 +98,6 @@ pub mod ocean{
         pub mesh_c: Option<Oceanpart>,
         pub mesh: Option<Mesh>,
         time: f32,
-        oceanwaves: Vec<OceanWave>,
     }
     impl Ocean{
         //pub fn create( mut self ){
@@ -98,8 +108,9 @@ pub mod ocean{
         pub fn at(){}
         pub fn update(
             time: Res<Time>,
+            game: Res<crate::Game>,
+            mut assets: ResMut<Assets<Mesh>>,
             mut query: Query<(&Transform, &Handle<Mesh>, With<Nmesh>)>,
-            mut assets: ResMut<Assets<Mesh>>
         ){
             //self.time = time.elapsed_seconds();
             for (transform, handle, _) in query.iter(){
@@ -108,10 +119,12 @@ pub mod ocean{
                     if let VertexAttributeValues::Float32x3(thing) = positions {
                         let mut temporary = Vec::new();
                         for i in thing {
-                            let temp = Vec3::new( i[0], ( time.elapsed_seconds()+i[0]+i[2] ).sin(), i[2]);
-                            temporary.push(temp);
+                            let mut h = 0.0;
+                            for e in &game.oceanwaves{
+                                h =h + e .get( i[0], i[2],time.elapsed_seconds() );
+                            }
+                            temporary.push(Vec3::new( i[0],h, i[2]));
                         }
-
                         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, temporary);
                     }
                 }

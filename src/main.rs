@@ -262,6 +262,11 @@ fn setup(
         ..default()
     });
 
+    game.oceanwaves.resize(3, ocean::ocean::OceanWave::new());
+    game.oceanwaves[0].x = 0.0;
+    game.oceanwaves[0].z = 1.0;
+    game.oceanwaves[1].speed = 4.0;
+    game.oceanwaves[1].x = 6.0;
 }
 
 fn move_player(
@@ -517,4 +522,10 @@ pub struct Game {
     enemies: Vec<Enemy>,
     sand: Island,
     ocean: ocean::ocean::Ocean,
+    oceanwaves: Vec<ocean::ocean::OceanWave>,
+}
+impl Game{
+    fn get_ocean_waves_level( x: f32, z: f32 ){
+        
+    }
 }
