@@ -13,13 +13,13 @@ pub mod animal{
         pub entity: Option<Entity>,
     }
     impl Fish{
-        pub fn new()
-        -> Self{
-            Fish{
-                pl:  crate::place::place::Place::new(),
-                entity: None,
-            }
-        }
+        //pub fn new()
+        //-> Self{
+        //    Fish{
+        //        pl:  crate::place::place::Place::new(),
+        //        entity: None,
+        //    }
+        //}
     }
     impl IAnimal for Fish{
         fn update(){}
@@ -31,13 +31,13 @@ pub mod animal{
         pub entity: Option<Entity>,
     }
     impl Bir{
-        pub fn new()
-        -> Self{
-            Bir{
-                pl:  crate::place::place::Place::new(),
-                entity: None,
-            }
-        }
+        //pub fn new()
+        //-> Self{
+        //    Bir{
+        //        pl:  crate::place::place::Place::new(),
+        //        entity: None,
+        //    }
+        //}
     }
     impl IAnimal for Bir{
         fn update(){}

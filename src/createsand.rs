@@ -25,15 +25,16 @@ pub mod createsand{
                 let x = (i as f32 - 10.0) * 1.0;
                 let z = (j as f32 - 10.0) * 1.0;
                 if x == 0.0 && z == 0.0 {
-                    vert.push([x,3.0,z]);
+                    vert.push([x+50.0,2.0,z]);
                 }else{
-                    vert.push([x*6.0,
-                    ((x/2.0).powi(2) + (z/2.0).powi(2)).sqrt().sin() / 
-                    ((x/2.0).powi(2) + (z/2.0).powi(2)).sqrt() * 3.0 +
-                    1.0 / ((x).powi(2) + (z).powi(2)).sqrt() + 0.2
+                    vert.push([x*6.0+50.0,
+                    (
+                        ((x/2.0).powi(2) + (z/2.0).powi(2)).sqrt().sin() / 
+                        ((x/2.0).powi(2) + (z/2.0).powi(2)).sqrt() * 3.0 +
+                        1.0 / ((x).powi(2) + (z).powi(2)).sqrt() + 0.2 ).log(2.0)
                         ,z*6.0]);
                 }
-                uvs.push( [ x*6.0, z* 6.0 ] );
+                uvs.push( [ (x/2.0).rem_euclid(1.0), (z/2.0).rem_euclid(1.0) ]);
             }
         }
         for i in 0..=19 {
@@ -57,9 +58,9 @@ pub mod createsand{
         
         let m = asset_server.load("0012-beach-sand-texture-seamless-hr.jpg");
         //images.get_mut( &m ).unwrap().sampler_descriptor.address_mode_u = AddressMode::Repeat;
-        let mut image = images.get_mut( &m );
+        let image = images.get_mut( &m );
     if let Some(image) = image {
-        let mut i = bevy::render::texture::ImageSampler::nearest_descriptor();
+        let mut i = bevy::render::texture::ImageSampler::linear_descriptor();
         i.address_mode_u = bevy::render::render_resource::AddressMode::Repeat;
         i.address_mode_v = bevy::render::render_resource::AddressMode::Repeat;
         i.address_mode_w = bevy::render::render_resource::AddressMode::Repeat;

@@ -7,6 +7,7 @@ pub mod vehicle{
         pub entity: Option<Entity>,
         pub camera_y: f32,
         pub camera_x: f32,
+        pub stop: bool,
     }
     impl Vehicle{
         //pub fn new()

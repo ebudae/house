@@ -6,7 +6,7 @@ pub mod ocean{
             render::mesh,
             render::mesh::*};
     
-    type float = f32;
+    type Float = f32;
 
     pub struct Oceanpart{
         mesh: Mesh,
@@ -63,10 +63,10 @@ pub mod ocean{
 
     #[derive(Clone,Copy)]
     pub struct OceanWave{
-        pub speed: float,
-        pub ampl: float,
-        pub x: float,
-        pub z: float,
+        pub speed: Float,
+        pub ampl: Float,
+        pub x: Float,
+        pub z: Float,
     }
     impl OceanWave{
         pub fn new()
@@ -79,8 +79,8 @@ pub mod ocean{
                 z: 1.0,
             }
         }
-        pub fn get( self,x: float,z: float,t:float )
-        -> float
+        pub fn get( self,x: Float,z: Float,t:Float )
+        -> Float
         {
             self.ampl * ( self.speed * (self.x*x+ self.z*z+t) ).sin()
         }

@@ -303,6 +303,11 @@ fn move_player(
         next_state.set(TravelMode::Vehicle);
     }
     
+    if keyboard_input.just_pressed(KeyCode::X) {
+        game.vehicle.pl.i = 0.0;
+        game.vehicle.pl.k = 0.0;
+    }
+
     if keyboard_input.just_pressed(KeyCode::Space) {
         //search closest enemy, make it chil of player or undo
         let k = game.player.accum_forward();
@@ -332,7 +337,19 @@ fn update_boat(
     mut transforms: Query<&mut Transform>,
     time: Res<Time>,
 ){
-    game.vehicle.pl.j = game.get_ocean_waves_level( game.vehicle.pl.i,game.vehicle.pl.k, time.elapsed_seconds());
+    let waterlevel = game.get_ocean_waves_level( game.vehicle.pl.i,game.vehicle.pl.k, time.elapsed_seconds());
+    let sandlevel = game.get_ocean_sand_level( game.vehicle.pl.i,game.vehicle.pl.k);
+    println!(" {},{}",waterlevel,sandlevel);
+    if waterlevel >= sandlevel{
+        game.vehicle.stop = false;
+        game.vehicle.pl.j = waterlevel;
+    }
+    else{
+        game.vehicle.stop = true;
+        game.vehicle.pl.j = sandlevel+0.0;
+        println!("{},{},{}",game.player.pl.i,game.player.pl.j,game.player.pl.k);
+    }
+    //game.vehicle.pl.j = game.get_ocean_waves_level( game.vehicle.pl.i,game.vehicle.pl.k, time.elapsed_seconds());
     *transforms.get_mut(game.vehicle.entity.unwrap()).unwrap() = Transform {
         translation: Vec3::new( game.vehicle.pl.i, game.vehicle.pl.j, game.vehicle.pl.k ),
         rotation: math::f32::Quat::from_rotation_y( game.vehicle.camera_y ),
@@ -344,33 +361,35 @@ fn move_vhc(
     keyboard_input: Res<Input<KeyCode>>,
     //mut commands: Commands,
     mut game: ResMut<Game>,
-    mut transforms: Query<&mut Transform>,
+    //mut transforms: Query<&mut Transform>,
     mut next_state: ResMut<NextState<TravelMode>>,
 ){
-    let mut moved = false;
+    //let mut moved = false;
+    if ! game.vehicle.stop{
 
-    if keyboard_input.pressed(KeyCode::W) {
-        let k = game.vehicle.forward();
-        game.vehicle.pl.i += 0.4 * k.x;
-        game.vehicle.pl.k += 0.4 * k.z;
-        moved = true;
-    }
-    if keyboard_input.pressed(KeyCode::S) {
-        let k = game.vehicle.forward();
-        game.vehicle.pl.i -= 0.4 * k.x;
-        game.vehicle.pl.k -= 0.4 * k.z;
-        moved = true;
-    }
-        
-    if keyboard_input.pressed(KeyCode::A) {
-        game.player.camera_y += 0.02;
-        game.vehicle.camera_y += 0.02;
-        moved = true;
-    }
-    if keyboard_input.pressed(KeyCode::D) {
-        game.player.camera_y -= 0.02;
-        game.vehicle.camera_y -= 0.02;
-        moved = true;
+        if keyboard_input.pressed(KeyCode::W) {
+            let k = game.vehicle.forward();
+            game.vehicle.pl.i += 0.4 * k.x;
+            game.vehicle.pl.k += 0.4 * k.z;
+            //moved = true;
+        }
+        if keyboard_input.pressed(KeyCode::S) {
+            let k = game.vehicle.forward();
+            game.vehicle.pl.i -= 0.4 * k.x;
+            game.vehicle.pl.k -= 0.4 * k.z;
+            //moved = true;
+        }
+            
+        if keyboard_input.pressed(KeyCode::A) {
+            game.player.camera_y += 0.02;
+            game.vehicle.camera_y += 0.02;
+            //moved = true;
+        }
+        if keyboard_input.pressed(KeyCode::D) {
+            game.player.camera_y -= 0.02;
+            game.vehicle.camera_y -= 0.02;
+            //moved = true;
+        }
     }
     
     if keyboard_input.just_pressed(KeyCode::Z) {
@@ -482,5 +501,22 @@ impl Game{
             k += wave.get( x,z,t);
         }
         k
+    }
+    fn get_ocean_sand_level(&self,x: f32, z: f32 )
+    -> f32
+    {
+        let x = x - 50.0;
+        let z = z /6.0;
+        let x = x /6.0;
+        let k = (
+        ((x/2.0).powi(2) + (z/2.0).powi(2)).sqrt().sin() / 
+        ((x/2.0).powi(2) + (z/2.0).powi(2)).sqrt() * 3.0 +
+        1.0 / ((x).powi(2) + (z).powi(2)).sqrt() + 0.2 ).log(2.0);
+        if k.is_nan(){
+            -200.0
+        }
+        else {
+            k
+        }
     }
 }
