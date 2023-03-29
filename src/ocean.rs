@@ -23,7 +23,7 @@ pub mod ocean{
                 z: 0,
             }
         }
-        pub fn create( &mut self, x: u32, z: u32, k: u32, x_offset: f32, z_offset: f32 )
+        pub fn create( &mut self, x: u32, z: u32, kx: f32,kz: f32, x_offset: f32, z_offset: f32 )
         {
             let mut vert = vec![];
             let mut indices = Vec::new();
@@ -33,9 +33,9 @@ pub mod ocean{
             
             for i in 0..= ( 2*x ) {
                 for j in 0..= ( 2*z ) {
-                    let x = (i as f32 - (k*x) as f32) * k as f32;
-                    let z = (j as f32 - (k*z) as f32) * k as f32;
-                    vert.push([x+x_offset,0.2*((x+x_offset+z+z_offset)*0.5).sin(),z+z_offset]);
+                    let x = (i as f32 - x as f32) * kx as f32;
+                    let z = (j as f32 - z as f32) * kz as f32;
+                    vert.push([kx+x+x_offset,0.0,kz+z+z_offset]);
                 }
             }
             for i in 0.. ( 2*x ) {
@@ -84,6 +84,20 @@ pub mod ocean{
         {
             self.ampl * ( self.speed * (self.x*x+ self.z*z+t) ).sin()
         }
+        pub fn getnormal( self,x: Float,z: Float,t:Float )
+        -> Vec3
+        {
+            //Vec3::new(
+            //-1.0 * self.ampl * self.speed* self.x *( self.speed * (self.x*x+ self.z*z+t) ).cos(),
+            //1.0,
+            //-1.0 * self.ampl * self.speed* self.z *( self.speed * (self.x*x+ self.z*z+t) ).cos()
+            //)
+            Vec3::new(
+            -1.0 * self.ampl * self.speed * self.x * ( self.speed * (self.x*x+ self.z*z+t) ).cos(),
+            1.0,
+            -1.0 * self.ampl * self.speed * self.z * ( self.speed * (self.x*x+ self.z*z+t) ).cos()
+            )
+        }
     }
 
     #[derive(Component, Default)]
@@ -109,13 +123,17 @@ pub mod ocean{
                     if let VertexAttributeValues::Float32x3(thing) = p {
                         let mut temporary = Vec::new();
                         for i in thing {
-                            //let mut h = 0.0;
-                            //for e in &game.oceanwaves{
-                            //    h =h + e .get( i[0], i[2],time.elapsed_seconds() );
-                            //}
                             temporary.push(Vec3::new( i[0],game.get_ocean_waves_level(i[0],i[2],time.elapsed_seconds()), i[2]));
                         }
                         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, temporary);
+                    }
+                    let p = mesh.attribute(Mesh::ATTRIBUTE_NORMAL).unwrap();
+                    if let VertexAttributeValues::Float32x3(thing) = p {
+                        let mut temporary = Vec::new();
+                        for i in thing {
+                            temporary.push( game.get_ocean_waves_n(i[0],i[2],time.elapsed_seconds()));
+                        }
+                        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, temporary);
                     }
                 }
             }
@@ -126,35 +144,35 @@ pub mod ocean{
             mut materials: ResMut<Assets<StandardMaterial>>,
         ){
             let mut mesh_c = Oceanpart::new();
-            mesh_c.create( 10, 10, 1, 0.0, 0.0, );
+            mesh_c.create( 10, 10, 1.0, 1.0, 0.0, 0.0, );
             commands.spawn((PbrBundle {
                 mesh: meshes.add(mesh_c.mesh),
                 material: materials.add(Color::rgb(0.0, 0.1, 0.3).into()),
                 ..default()
             },Nmesh));
             let mut mesh_c = Oceanpart::new();
-            mesh_c.create( 50, 10, 1, 60.0, 0.0, );
+            mesh_c.create( 25, 10, 2.0, 1.0, 59.0, 0.0, );
             commands.spawn((PbrBundle {
                 mesh: meshes.add(mesh_c.mesh),
                 material: materials.add(Color::rgb(0.0, 0.8, 0.5).into()),
                 ..default()
             },Nmesh));
             let mut mesh_c = Oceanpart::new();
-            mesh_c.create( 50, 10, 1, -60.0, 0.0, );
+            mesh_c.create( 25, 10, 2.0, 1.0, -61.0, 0.0, );
             commands.spawn((PbrBundle {
                 mesh: meshes.add(mesh_c.mesh),
                 material: materials.add(Color::rgb(0.5, 0.3, 0.5).into()),
                 ..default()
             },Nmesh));
             let mut mesh_c = Oceanpart::new();
-            mesh_c.create( 10, 50, 1, 0.0, 60.0, );
+            mesh_c.create( 10, 25, 1.0, 2.0, 0.0, 59.0, );
             commands.spawn((PbrBundle {
                 mesh: meshes.add(mesh_c.mesh),
                 material: materials.add(Color::rgb(0.9, 0.1, 0.5).into()),
                 ..default()
             },Nmesh));
             let mut mesh_c = Oceanpart::new();
-            mesh_c.create( 10, 50, 1, 0.0, -60.0, );
+            mesh_c.create( 10, 25, 1.0, 2.0, 0.0, -61.0, );
             commands.spawn((PbrBundle {
                 mesh: meshes.add(mesh_c.mesh),
                 material: materials.add(Color::rgb(0.0, 0.0, 0.5).into()),
@@ -162,28 +180,28 @@ pub mod ocean{
             },Nmesh));
 
             let mut mesh_c = Oceanpart::new();
-            mesh_c.create( 50, 50, 1, 60.0, 60.0, );
+            mesh_c.create( 25, 25, 2.0, 2.0, 59.0, 59.0, );
             commands.spawn((PbrBundle {
                 mesh: meshes.add(mesh_c.mesh),
                 material: materials.add(Color::rgb(0.0, 0.3, 0.5).into()),
                 ..default()
             },Nmesh));
             let mut mesh_c = Oceanpart::new();
-            mesh_c.create( 50, 50, 1, -60.0, 60.0, );
+            mesh_c.create( 25, 25, 2.0, 2.0, -61.0, 59.0, );
             commands.spawn((PbrBundle {
                 mesh: meshes.add(mesh_c.mesh),
                 material: materials.add(Color::rgb(0.0, 0.3, 0.5).into()),
                 ..default()
             },Nmesh));
             let mut mesh_c = Oceanpart::new();
-            mesh_c.create( 50, 50, 1, -60.0, -60.0, );
+            mesh_c.create( 25, 25, 2.0, 2.0, -61.0, -61.0, );
             commands.spawn((PbrBundle {
                 mesh: meshes.add(mesh_c.mesh),
                 material: materials.add(Color::rgb(0.0, 0.3, 0.5).into()),
                 ..default()
             },Nmesh));
             let mut mesh_c = Oceanpart::new();
-            mesh_c.create( 50, 50, 1, 60.0, -60.0, );
+            mesh_c.create( 25, 25, 2.0, 2.0, 59.0, -61.0, );
             commands.spawn((PbrBundle {
                 mesh: meshes.add(mesh_c.mesh),
                 material: materials.add(Color::rgb(0.0, 0.3, 0.5).into()),

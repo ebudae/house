@@ -23,19 +23,20 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.99, 0.99, 0.9)))
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
-        .add_startup_system(createk::createk::createk)
         .add_startup_system(add_light)
+        .add_startup_system(createk::createk::createk)
         .add_startup_system(ocean::ocean::Ocean::register)
         .add_startup_system(createsand::createsand::createsand)
         .add_system(mouse_motion)
         .add_system(nomau5)
+        .add_system(ocean::ocean::Ocean::update)
         .add_system(move_player.in_set( OnUpdate(TravelMode::Walk) ))
         .add_system(move_vhc.in_set( OnUpdate(TravelMode::Vehicle) ))
-        .add_system(updateframe)
         .add_system( update_boat.after(move_vhc) )
-        .add_system(ocean::ocean::Ocean::update)
+        .add_system(updateframe)
         .run();
 }
+
 
 fn add_light(
     mut commands: Commands,
@@ -46,7 +47,7 @@ fn add_light(
                 intensity: 30000.0,
                 ..Default::default()
             },
-        transform: Transform::from_translation(Vec3::new(0.0, 10.0, 0.0)),
+        transform: Transform::from_translation(Vec3::new(50.0, 10.0, 0.0)),
         ..Default::default()
     });
     commands.spawn(PointLightBundle {
@@ -56,7 +57,7 @@ fn add_light(
                 color: Color::GREEN,
                 ..Default::default()
             },
-        transform: Transform::from_translation(Vec3::new(10.0,10.0, 0.0)),
+        transform: Transform::from_translation(Vec3::new(60.0,10.0, 0.0)),
         ..Default::default()
     });
     commands.spawn(PointLightBundle {
@@ -66,12 +67,13 @@ fn add_light(
                 color: Color::BLUE,
                 ..Default::default()
             },
-        transform: Transform::from_translation(Vec3::new(0.0,10.0, 30.0)),
+        transform: Transform::from_translation(Vec3::new(40.0,10.0, 30.0)),
         ..Default::default()
     });
     ambient_light.color = Color::WHITE;
-    ambient_light.brightness = 0.8;
+    ambient_light.brightness = 3.8;
 }
+
 
 fn updateframe(
     game: ResMut<Game>,
@@ -90,15 +92,12 @@ fn updateframe(
     //};
     for i in &game.enemies{
         *transforms.get_mut(i.entity.unwrap()).unwrap() = Transform {
-            translation: Vec3::new(
-                i.pl.i,
-                i.pl.j,
-                i.pl.k,
-            ),
+            translation: i.pl.to_vec3(),
             ..default()
         };
     }
 }
+
 
 fn nomau5(
     mut windows: Query<&mut Window>,
@@ -118,6 +117,7 @@ fn nomau5(
     }
 }
 
+
 const MOUSE_SP: f32 = 0.005;
 fn mouse_motion(
     mut motion_evr: EventReader<bevy::input::mouse::MouseMotion>,
@@ -136,6 +136,7 @@ fn mouse_motion(
         }
     }
 }
+
 
 fn setup(
     mut commands: Commands,
@@ -242,15 +243,19 @@ fn setup(
     game.oceanwaves.resize(3, ocean::ocean::OceanWave::new());
     game.oceanwaves[0].x = 0.0;
     game.oceanwaves[0].z = 1.0;
-    game.oceanwaves[1].speed = 4.0;
-    game.oceanwaves[1].x = 6.0;
+    game.oceanwaves[0].ampl = 0.02;
+    game.oceanwaves[1].speed = 0.5;
+    game.oceanwaves[1].x = 2.0;
+    game.oceanwaves[2].speed = 0.1;
 }
+
 
 fn move_player(
     keyboard_input: Res<Input<KeyCode>>,
     //mut commands: Commands,
     mut game: ResMut<Game>,
-    mut transforms: Query<&mut Transform>,
+    //mut t: ResMut<Time>,
+    //mut transforms: Query<&mut Transform>,
     mut next_state: ResMut<NextState<TravelMode>>,
     //mut walkingmode: ResMut<TravelMode>,
 ){
@@ -307,6 +312,15 @@ fn move_player(
         game.vehicle.pl.i = 0.0;
         game.vehicle.pl.k = 0.0;
     }
+    
+    if keyboard_input.pressed(KeyCode::C) {
+        game.vehicle.pl.i = 0.0;
+        game.vehicle.pl.k = 0.0;
+        //*transforms.get_mut(game.vehicle.entity.unwrap()).unwrap() = Transform {
+        //    rotation: Quat::from_rotation_x( t.elapsed_seconds()*284.0 ),
+        //    ..default()
+        //};
+    }
 
     if keyboard_input.just_pressed(KeyCode::Space) {
         //search closest enemy, make it chil of player or undo
@@ -325,12 +339,13 @@ fn move_player(
             let k = game.player.accum_forward();
             game.enemies[0].pl.from_vec3( k );
             }
-        *transforms.get_mut(game.player.entity.unwrap()).unwrap() = Transform {
-            translation: Vec3::new( game.player.pl.i, game.player.pl.j, game.player.pl.k ),
-            ..default()
-        };   
+        //*transforms.get_mut(game.player.entity.unwrap()).unwrap() = Transform {
+        //    translation: Vec3::new( game.player.pl.i, game.player.pl.j, game.player.pl.k ),
+        //    ..default()
+        //};   
     }
 }
+
 
 fn update_boat(
     mut game: ResMut<Game>,
@@ -338,8 +353,8 @@ fn update_boat(
     time: Res<Time>,
 ){
     let waterlevel = game.get_ocean_waves_level( game.vehicle.pl.i,game.vehicle.pl.k, time.elapsed_seconds());
-    let sandlevel = game.get_ocean_sand_level( game.vehicle.pl.i,game.vehicle.pl.k);
-    println!(" {},{}",waterlevel,sandlevel);
+    let sandlevel = game.get_sand_level( game.vehicle.pl.i,game.vehicle.pl.k);
+    //println!(" {},{}",waterlevel,sandlevel);
     if waterlevel >= sandlevel{
         game.vehicle.stop = false;
         game.vehicle.pl.j = waterlevel;
@@ -347,7 +362,7 @@ fn update_boat(
     else{
         game.vehicle.stop = true;
         game.vehicle.pl.j = sandlevel+0.0;
-        println!("{},{},{}",game.player.pl.i,game.player.pl.j,game.player.pl.k);
+        //println!("{},{},{}",game.player.pl.i,game.player.pl.j,game.player.pl.k);
     }
     //game.vehicle.pl.j = game.get_ocean_waves_level( game.vehicle.pl.i,game.vehicle.pl.k, time.elapsed_seconds());
     *transforms.get_mut(game.vehicle.entity.unwrap()).unwrap() = Transform {
@@ -356,6 +371,7 @@ fn update_boat(
         scale: Vec3::new( 10.0, 10.0,10.0 ),
     };
 }
+
 
 fn move_vhc(
     keyboard_input: Res<Input<KeyCode>>,
@@ -502,7 +518,7 @@ impl Game{
         }
         k
     }
-    fn get_ocean_sand_level(&self,x: f32, z: f32 )
+    fn get_sand_level(&self,x: f32, z: f32 )
     -> f32
     {
         let x = x - 50.0;
@@ -518,5 +534,26 @@ impl Game{
         else {
             k
         }
+    }
+    fn get_level(&self,x: f32, z: f32,t:f32 )
+    -> f32
+    {
+        let k = self.get_ocean_waves_level(x, z,t );
+        let j = self.get_sand_level(x, z );
+        if k>j{
+            k
+        }
+        else{
+            j
+        }
+    }
+    fn get_ocean_waves_n(&self,x: f32, z: f32,t:f32 )
+    -> Vec3
+    {
+        let mut k = Vec3::new(0.0,0.0,0.0);
+        for wave in &self.oceanwaves{
+            k += wave.getnormal( x,z,t);
+        }
+        k.normalize()
     }
 }

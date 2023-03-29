@@ -24,7 +24,7 @@ pub mod createk{
             wher: crate::place::place::Place,
         }
 
-        let elems: Vec<WhatToCreate> = vec![
+        let mut elems: Vec<WhatToCreate> = vec![
             WhatToCreate{ what:  "q63dae3c872f63b7131e032b6".to_string(), wher: crate::place::place::Place{ i:3.0, j:0.0, k:2.0 } },
             WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
             WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
@@ -33,21 +33,6 @@ pub mod createk{
             WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
             WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
             WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
             WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
             WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
             WhatToCreate{ what: "enemy0".to_string(), wher: crate::place::place::Place::rand() },
@@ -65,9 +50,18 @@ pub mod createk{
             WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
             WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
             WhatToCreate{ what: "question_mark".to_string(), wher: crate::place::place::Place::rand() },
-            WhatToCreate{ what: "nokia".to_string(), wher: crate::place::place::Place{ i:3.0, j:0.0, k:2.0 } },
+            WhatToCreate{ what: "nokia".to_string(), wher: crate::place::place::Place{ i:0.0, j:0.0, k:2.0 } },
+            WhatToCreate{ what: "nokia".to_string(), wher: crate::place::place::Place{ i:1.0, j:0.0, k:0.0 } },
+            WhatToCreate{ what: "nokia".to_string(), wher: crate::place::place::Place{ i:2.0, j:0.0, k:0.0 } },
+            WhatToCreate{ what: "nokia".to_string(), wher: crate::place::place::Place{ i:3.0, j:0.0, k:0.0 } },
+            WhatToCreate{ what: "nokia".to_string(), wher: crate::place::place::Place{ i:4.0, j:0.0, k:0.0 } },
+            WhatToCreate{ what: "nokia".to_string(), wher: crate::place::place::Place{ i:0.0, j:0.0, k:1.0 } },
         ];
-
+        
+        for i in &mut elems{
+            i.wher.j = game.get_level( i.wher.i, i.wher.k, 0.0 );
+        }
+        
         for i in elems{
             match i.what.as_str(){
                 "enemy" => { game.enemies.push( 

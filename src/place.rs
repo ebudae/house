@@ -9,6 +9,7 @@ pub mod place{
         pub k: f32,
     }
     impl Place{
+    #[allow(dead_code)]
         pub fn new()
         -> Self{
             Place{
@@ -20,7 +21,7 @@ pub mod place{
         pub fn rand()
         -> Place{
             Place{
-                i: rand::thread_rng().gen_range(-40.0..40.0),
+                i: 50.0 + rand::thread_rng().gen_range(-40.0..40.0),
                 j: 0.0,
                 k: rand::thread_rng().gen_range(-40.0..40.0),
             } 
